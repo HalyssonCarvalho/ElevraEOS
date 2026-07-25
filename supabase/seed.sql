@@ -4,11 +4,12 @@
 -- Rode depois de schema.sql e policies.sql.
 --
 -- PASSO 1 — crie os usuários de autenticação primeiro (Supabase Dashboard >
--- Authentication > Users > Invite user, ou supabase.auth.admin.createUser
--- em um script server-side). Use exatamente estes e-mails:
---   marina@elevra.digital    (será admin)
---   rafael@elevra.digital    (será consultor)
---   bianca@elevra.digital    (será consultor)
+-- Authentication > Users > Add user). Use exatamente estes e-mails:
+--   halysson.albert@gmail.com      (admin — você)
+--   alissonmarcondees@gmail.com    (consultor — Alisson Marcondes, CGO)
+--
+-- Todos os clientes de demonstração ficam atribuídos ao Alisson como
+-- consultor responsável.
 --
 -- PASSO 2 — depois de criados, rode este arquivo. Os INSERTs de `profiles`
 -- abaixo buscam o id de cada usuário em auth.users pelo e-mail, então a
@@ -31,21 +32,15 @@ on conflict (id) do nothing;
 -- -----------------------------------------------------------------------------
 
 insert into public.profiles (organization_id, user_id, full_name, email, role)
-select '00000000-0000-0000-0000-000000000001', u.id, 'Marina Duarte', 'marina@elevra.digital', 'admin'
+select '00000000-0000-0000-0000-000000000001', u.id, 'Halysson Carvalho', 'halysson.albert@gmail.com', 'admin'
 from auth.users u
-where u.email = 'marina@elevra.digital'
+where u.email = 'halysson.albert@gmail.com'
 on conflict (user_id) do nothing;
 
 insert into public.profiles (organization_id, user_id, full_name, email, role)
-select '00000000-0000-0000-0000-000000000001', u.id, 'Rafael Nogueira', 'rafael@elevra.digital', 'consultor'
+select '00000000-0000-0000-0000-000000000001', u.id, 'Alisson Marcondes', 'alissonmarcondees@gmail.com', 'consultor'
 from auth.users u
-where u.email = 'rafael@elevra.digital'
-on conflict (user_id) do nothing;
-
-insert into public.profiles (organization_id, user_id, full_name, email, role)
-select '00000000-0000-0000-0000-000000000001', u.id, 'Bianca Ferraz', 'bianca@elevra.digital', 'consultor'
-from auth.users u
-where u.email = 'bianca@elevra.digital'
+where u.email = 'alissonmarcondees@gmail.com'
 on conflict (user_id) do nothing;
 
 -- -----------------------------------------------------------------------------
@@ -63,7 +58,7 @@ values (
   'Semper Fidelis Floor Care', 'Michael Costa', 'Serviços residenciais (limpeza de pisos)',
   'contato@semperfidelisfloorcare.com', '+1 (954) 555-0142', 'https://semperfidelisfloorcare.com',
   'Deerfield Beach, FL', '2025-11-03', 2200,
-  (select id from public.profiles where email = 'rafael@elevra.digital'),
+  (select id from public.profiles where email = 'alissonmarcondees@gmail.com'),
   'Aumentar agendamentos recorrentes de limpeza comercial e residencial',
   120, 45000, 'ativo'
 )
@@ -80,7 +75,7 @@ values (
   'AutoForce Group', 'Daniel Reyes', 'Concessionária / venda de veículos seminovos',
   'marketing@autoforcegroup.com', '+1 (786) 555-0198', 'https://autoforcegroup.com',
   'Miami, FL', '2025-06-15', 4800,
-  (select id from public.profiles where email = 'bianca@elevra.digital'),
+  (select id from public.profiles where email = 'alissonmarcondees@gmail.com'),
   'Gerar leads qualificados para o time de vendas e reduzir CPL',
   260, 180000, 'ativo'
 )
@@ -97,7 +92,7 @@ values (
   'Rose Lopes Realty', 'Rose Lopes', 'Imobiliário residencial',
   'rose@roselopesrealty.com', '+1 (561) 555-0177', 'https://roselopesrealty.com',
   'Boca Raton, FL', '2026-01-10', 3200,
-  (select id from public.profiles where email = 'rafael@elevra.digital'),
+  (select id from public.profiles where email = 'alissonmarcondees@gmail.com'),
   'Fortalecer autoridade da marca pessoal e gerar leads de compradores',
   80, 60000, 'em_risco'
 )
@@ -110,11 +105,10 @@ on conflict (id) do nothing;
 -- -----------------------------------------------------------------------------
 
 insert into public.client_members (client_id, profile_id)
-select '10000000-0000-0000-0000-000000000001', id from public.profiles where email = 'rafael@elevra.digital'
-union all
-select '10000000-0000-0000-0000-000000000002', id from public.profiles where email = 'bianca@elevra.digital'
-union all
-select '10000000-0000-0000-0000-000000000003', id from public.profiles where email = 'rafael@elevra.digital'
+select c.id, p.id
+from public.clients c
+cross join public.profiles p
+where p.email = 'alissonmarcondees@gmail.com'
 on conflict do nothing;
 
 -- -----------------------------------------------------------------------------
@@ -193,15 +187,15 @@ insert into public.content_calendar (
 )
 values
   ('10000000-0000-0000-0000-000000000001', '2026-07-25', 'Piso Novo Para o Verão', 'reels', 'Instagram', 'Engajamento',
-    (select id from public.profiles where email = 'rafael@elevra.digital'), 'programado', 'Agende sua limpeza'),
+    (select id from public.profiles where email = 'alissonmarcondees@gmail.com'), 'programado', 'Agende sua limpeza'),
   ('10000000-0000-0000-0000-000000000002', '2026-07-26', 'Feirão de Seminovos Julho', 'anuncio', 'Meta Ads', 'Conversão',
-    (select id from public.profiles where email = 'bianca@elevra.digital'), 'publicado', 'Agende seu test-drive'),
+    (select id from public.profiles where email = 'alissonmarcondees@gmail.com'), 'publicado', 'Agende seu test-drive'),
   ('10000000-0000-0000-0000-000000000003', '2026-07-28', 'Marca Pessoal Rose Lopes', 'carrossel', 'Instagram', 'Autoridade',
-    (select id from public.profiles where email = 'rafael@elevra.digital'), 'em_producao', 'Fale com a Rose'),
+    (select id from public.profiles where email = 'alissonmarcondees@gmail.com'), 'em_producao', 'Fale com a Rose'),
   ('10000000-0000-0000-0000-000000000001', '2026-07-29', 'Piso Novo Para o Verão', 'whatsapp', 'WhatsApp', 'Retenção',
-    (select id from public.profiles where email = 'rafael@elevra.digital'), 'planejado', 'Renove seu plano trimestral'),
+    (select id from public.profiles where email = 'alissonmarcondees@gmail.com'), 'planejado', 'Renove seu plano trimestral'),
   ('10000000-0000-0000-0000-000000000002', '2026-07-31', 'Feirão de Seminovos Julho', 'email', 'E-mail', 'Conversão',
-    (select id from public.profiles where email = 'bianca@elevra.digital'), 'em_aprovacao', 'Últimos dias do feirão');
+    (select id from public.profiles where email = 'alissonmarcondees@gmail.com'), 'em_aprovacao', 'Últimos dias do feirão');
 
 -- -----------------------------------------------------------------------------
 -- tasks
@@ -211,19 +205,19 @@ insert into public.tasks (client_id, title, description, responsible_profile_id,
 values
   ('10000000-0000-0000-0000-000000000001', 'Gravar reels de antes/depois de limpeza comercial',
     'Captar material em cliente comercial autorizado para uso de imagem.',
-    (select id from public.profiles where email = 'rafael@elevra.digital'), 'alta', 'em_andamento', '2026-07-26', 'Conteúdo'),
+    (select id from public.profiles where email = 'alissonmarcondees@gmail.com'), 'alta', 'em_andamento', '2026-07-26', 'Conteúdo'),
   ('10000000-0000-0000-0000-000000000002', 'Revisar públicos personalizados da campanha de feirão', null,
-    (select id from public.profiles where email = 'bianca@elevra.digital'), 'urgente', 'pendente', '2026-07-25', 'Tráfego pago'),
+    (select id from public.profiles where email = 'alissonmarcondees@gmail.com'), 'urgente', 'pendente', '2026-07-25', 'Tráfego pago'),
   ('10000000-0000-0000-0000-000000000003', 'Aprovar carrossel do imóvel na Palmetto Park Rd.',
     'Aguardando aprovação da cliente antes de programar publicação.',
-    (select id from public.profiles where email = 'rafael@elevra.digital'), 'media', 'aguardando_cliente', '2026-07-27', 'Conteúdo'),
+    (select id from public.profiles where email = 'alissonmarcondees@gmail.com'), 'media', 'aguardando_cliente', '2026-07-27', 'Conteúdo'),
   ('10000000-0000-0000-0000-000000000002', 'Enviar relatório executivo do feirão para o cliente', null,
-    (select id from public.profiles where email = 'bianca@elevra.digital'), 'alta', 'pendente', '2026-07-24', 'Relatório'),
+    (select id from public.profiles where email = 'alissonmarcondees@gmail.com'), 'alta', 'pendente', '2026-07-24', 'Relatório'),
   ('10000000-0000-0000-0000-000000000001', 'Configurar automação de WhatsApp para renovação trimestral', null,
-    (select id from public.profiles where email = 'rafael@elevra.digital'), 'baixa', 'concluida', '2026-07-18', 'Automação'),
+    (select id from public.profiles where email = 'alissonmarcondees@gmail.com'), 'baixa', 'concluida', '2026-07-18', 'Automação'),
   ('10000000-0000-0000-0000-000000000003', 'Reunião de revisão de estratégia com a cliente',
     'Cliente sinalizou insatisfação com volume de leads — priorizar.',
-    (select id from public.profiles where email = 'rafael@elevra.digital'), 'urgente', 'pendente', '2026-07-24', 'Estratégia');
+    (select id from public.profiles where email = 'alissonmarcondees@gmail.com'), 'urgente', 'pendente', '2026-07-24', 'Estratégia');
 
 -- -----------------------------------------------------------------------------
 -- weekly_reports
@@ -243,7 +237,7 @@ values
     'Time comercial sem capacidade de resposta rápida nos horários de pico.',
     'Contratar SDR temporário para o período do feirão.',
     'Reduzir tempo de resposta, escalar orçamento da campanha vencedora.',
-    (select id from public.profiles where email = 'bianca@elevra.digital'), '2026-07-22'
+    (select id from public.profiles where email = 'alissonmarcondees@gmail.com'), '2026-07-22'
   ),
   (
     '10000000-0000-0000-0000-000000000001', '13 a 19 de julho de 2026',
@@ -254,7 +248,7 @@ values
     'Agenda de equipes de campo próxima do limite na alta temporada.',
     'Avaliar contratação de uma equipe extra para agosto.',
     'Testar novo criativo de depoimento em vídeo.',
-    (select id from public.profiles where email = 'rafael@elevra.digital'), '2026-07-22'
+    (select id from public.profiles where email = 'alissonmarcondees@gmail.com'), '2026-07-22'
   );
 
 -- -----------------------------------------------------------------------------
@@ -275,7 +269,7 @@ values
     79, 'Processos de agendamento funcionando bem, poucas reclamações.',
     88, 'Avaliações consistentemente altas (4,8/5).',
     78.4, 'Avaliar contratação de equipe extra para sustentar crescimento sem perder qualidade no atendimento.',
-    (select id from public.profiles where email = 'rafael@elevra.digital')
+    (select id from public.profiles where email = 'alissonmarcondees@gmail.com')
   ),
   (
     '10000000-0000-0000-0000-000000000002', 'Julho 2026',
@@ -285,7 +279,7 @@ values
     74, 'Processo de repasse de leads para vendedores pode ser mais rápido.',
     77, 'Satisfação pós-venda estável, sem grandes variações.',
     78.4, 'Priorizar redução do tempo de resposta comercial via SDR dedicado durante campanhas.',
-    (select id from public.profiles where email = 'bianca@elevra.digital')
+    (select id from public.profiles where email = 'alissonmarcondees@gmail.com')
   ),
   (
     '10000000-0000-0000-0000-000000000003', 'Julho 2026',
@@ -295,5 +289,5 @@ values
     63, 'Aprovações de conteúdo estão atrasando publicações.',
     80, 'Cliente muito acessível e comunicativa.',
     63.2, 'Revisar segmentação de público e oferta da campanha; acelerar fluxo de aprovação de conteúdo.',
-    (select id from public.profiles where email = 'rafael@elevra.digital')
+    (select id from public.profiles where email = 'alissonmarcondees@gmail.com')
   );
