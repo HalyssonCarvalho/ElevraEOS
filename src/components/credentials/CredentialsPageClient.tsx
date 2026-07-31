@@ -132,3 +132,15 @@ export function CredentialsPageClient({ clientId, initialCredentials }: { client
                 {creds.map((cred) => (
                   <CredentialRow key={cred.id} credential={cred}
                     onEdit={(c) => { setEditing(c);
+                      setShowForm(true); }}
+                    onDelete={(id) => setCredentials((prev) => prev.filter((c) => c.id !== id))}
+                  />
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
