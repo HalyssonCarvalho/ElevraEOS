@@ -10,16 +10,16 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { CredentialForm } from "@/components/credentials/CredentialForm";
 import type { ClientCredential, CredentialCategory } from "@/lib/types/database";
 
-const categoryLabels: Record<CredentialCategory, { label: string; tone: "default" | "info" | "success" | "warning" | "danger" }> = {
+const categoryLabels: Record<CredentialCategory, { label: string; tone: "info" | "success" | "warning" | "danger" }> = {
   social_media:    { label: "Redes sociais",   tone: "info" },
   ads:             { label: "Anúncios",         tone: "warning" },
   website:         { label: "Website",          tone: "success" },
-  crm:             { label: "CRM",              tone: "default" },
+  crm:             { label: "CRM",              tone: "info" },
   email_marketing: { label: "E-mail marketing", tone: "info" },
-  analytics:       { label: "Analytics",        tone: "default" },
-  hosting:         { label: "Hospedagem",       tone: "default" },
-  domain:          { label: "Domínio",          tone: "default" },
-  other:           { label: "Outros",           tone: "default" },
+  analytics:       { label: "Analytics",        tone: "info" },
+  hosting:         { label: "Hospedagem",       tone: "info" },
+  domain:          { label: "Domínio",          tone: "info" },
+  other:           { label: "Outros",           tone: "info" },
 };
 
 function CredentialRow({ credential, onEdit, onDelete }: { credential: ClientCredential; onEdit: (c: ClientCredential) => void; onDelete: (id: string) => void; }) {
@@ -103,13 +103,15 @@ export function CredentialsPageClient({ clientId, initialCredentials }: { client
 
   return (
     <div className="flex flex-col gap-6">
-      <PageHeader title="Credenciais" description="Senhas e acessos dos sistemas do cliente. Visível apenas para a equipe interna."
+      <PageHeader
+        title="Credenciais"
+        description="Senhas e acessos dos sistemas do cliente. Visível apenas para a equipe interna."
         actions={<Button onClick={() => setShowForm(true)}><Plus className="h-4 w-4" />Nova credencial</Button>}
       />
       <div className="flex items-start gap-2.5 rounded-xl border border-accent-soft-border bg-accent-soft px-4 py-3">
         <ShieldCheck className="h-4 w-4 text-accent mt-0.5 shrink-0" />
         <p className="text-xs text-text-secondary">
-          <span className="font-medium text-text-primary">Acesso restrito.</span> Visível apenas para administradores e consultores atribuídos ao cliente.
+          <span className="font-medium text-text-primary">Acesso restrito.</span> Visível apenas para administradores e consultores atribuídos.
         </p>
       </div>
       {showForm && (
@@ -118,7 +120,7 @@ export function CredentialsPageClient({ clientId, initialCredentials }: { client
         </CardContent></Card>
       )}
       {credentials.length === 0 && !showForm ? (
-        <EmptyState icon={<KeyRound className="h-6 w-6" />} title="Nenhuma credencial cadastrada" description="Adicione senhas e acessos dos sistemas deste cliente."
+        <EmptyState icon={<KeyRound className="h-6 w-6" />} title="Nenhuma credencial" description="Adicione senhas e acessos dos sistemas deste cliente."
           action={<Button onClick={() => setShowForm(true)} size="sm"><Plus className="h-4 w-4" />Adicionar</Button>}
         />
       ) : (
@@ -128,13 +130,5 @@ export function CredentialsPageClient({ clientId, initialCredentials }: { client
               <h3 className="text-xs font-semibold text-text-muted uppercase tracking-widest px-1">{categoryLabels[category].label}</h3>
               <div className="flex flex-col gap-2">
                 {creds.map((cred) => (
-                  <CredentialRow key={cred.id} credential={cred} onEdit={(c) => { setEditing(c); setShowForm(true); }} onDelete={(id) => setCredentials((prev) => prev.filter((c) => c.id !== id))} />
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
+                  <CredentialRow key={cred.id} credential={cred}
+                    onEdit={(c) => { setEditing(c);
