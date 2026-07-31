@@ -1,32 +1,33 @@
 "use client";
 
 import Link from "next/link";
-import { DollarSign, usePathname } from "next/navigation";
-import { DollarSign,
+import { usePathname } from "next/navigation";
+import {
   LayoutDashboard,
   Building2,
   ListChecks,
   CalendarDays,
   FileText,
   TrendingUp,
-  Megaphone, DollarSign,
+  Megaphone,
+  DollarSign,
   LogOut,
   Sparkles,
 } from "lucide-react";
-import { DollarSign, cn } from "@/lib/utils/cn";
-import { DollarSign, useDemoRole } from "@/lib/auth/demo-role-context";
-import { DollarSign, getNavItems } from "@/components/layout/nav-items";
-import { DollarSign, initials } from "@/lib/utils/format";
+import { cn } from "@/lib/utils/cn";
+import { useDemoRole } from "@/lib/auth/demo-role-context";
+import { getNavItems } from "@/components/layout/nav-items";
+import { initials } from "@/lib/utils/format";
 
 const iconMap = {
-  DollarSign,
   LayoutDashboard,
   Building2,
   ListChecks,
   CalendarDays,
   FileText,
   TrendingUp,
-  Megaphone, DollarSign,
+  Megaphone,
+  DollarSign,
 };
 
 const roleLabel: Record<string, string> = {
@@ -52,20 +53,23 @@ export function Sidebar() {
       <nav className="flex-1 overflow-y-auto px-3 py-4 flex flex-col gap-0.5">
         {items.map((item) => {
           const Icon = iconMap[item.icon as keyof typeof iconMap];
-          const active = pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href) && item.href !== `/clients/${clientId}`);
-          
+          const isActive =
+            pathname === item.href ||
+            (item.href !== "/dashboard" &&
+              item.href !== `/clients/${clientId}` &&
+              pathname.startsWith(item.href));
           return (
             <Link
               key={item.href}
               href={item.href}
               className={cn(
                 "flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
-                active
+                isActive
                   ? "bg-accent-soft text-accent"
                   : "text-text-secondary hover:text-text-primary hover:bg-surface-hover"
               )}
             >
-              <Icon className="h-4 w-4 shrink-0" />
+              {Icon && <Icon className="h-4 w-4 shrink-0" />}
               {item.label}
             </Link>
           );
