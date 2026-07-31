@@ -25,6 +25,7 @@ const clientSchema = z.object({
   main_goal: z.string().min(3),
   monthly_leads_goal: z.coerce.number().min(0),
   monthly_revenue_goal: z.coerce.number().min(0),
+  commission_pct: z.coerce.number().min(0).max(100),
   status: z.enum(["ativo", "pausado", "em_risco", "encerrado"]),
 });
 
@@ -51,6 +52,7 @@ export function ClientSettingsForm({ client }: { client: Client }) {
       main_goal: client.main_goal,
       monthly_leads_goal: client.monthly_leads_goal,
       monthly_revenue_goal: client.monthly_revenue_goal,
+      commission_pct: 0,
       status: client.status,
     },
   });
@@ -110,7 +112,8 @@ export function ClientSettingsForm({ client }: { client: Client }) {
             />
             <Textarea label="Objetivo principal" required {...register("main_goal")} error={errors.main_goal?.message} />
             <div className="grid sm:grid-cols-2 gap-4">
-              <Input label="Meta mensal de leads" type="number" required {...register("monthly_leads_goal")} />
+              <Input label="Comissão acordada (%)" type="number" step="0.1" placeholder="Ex: 10" hint="Percentual sobre o resultado gerado pelo cliente" {...register("commission_pct")} />
+            <Input label="Meta mensal de leads" type="number" required {...register("monthly_leads_goal")} />
               <Input label="Meta mensal de receita" type="number" step="0.01" required {...register("monthly_revenue_goal")} />
             </div>
             <Select
