@@ -1,31 +1,32 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import {
+import { DollarSign, usePathname } from "next/navigation";
+import { DollarSign,
   LayoutDashboard,
   Building2,
   ListChecks,
   CalendarDays,
   FileText,
   TrendingUp,
-  Megaphone,
+  Megaphone, DollarSign,
   LogOut,
   Sparkles,
 } from "lucide-react";
-import { cn } from "@/lib/utils/cn";
-import { useDemoRole } from "@/lib/auth/demo-role-context";
-import { getNavItems } from "@/components/layout/nav-items";
-import { initials } from "@/lib/utils/format";
+import { DollarSign, cn } from "@/lib/utils/cn";
+import { DollarSign, useDemoRole } from "@/lib/auth/demo-role-context";
+import { DollarSign, getNavItems } from "@/components/layout/nav-items";
+import { DollarSign, initials } from "@/lib/utils/format";
 
 const iconMap = {
+  DollarSign,
   LayoutDashboard,
   Building2,
   ListChecks,
   CalendarDays,
   FileText,
   TrendingUp,
-  Megaphone,
+  Megaphone, DollarSign,
 };
 
 const roleLabel: Record<string, string> = {

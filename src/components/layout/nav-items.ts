@@ -24,5 +24,6 @@ export function getNavItems(role: UserRole, clientId: string | null): NavItem[] 
     { label: "Tarefas", href: "/tasks", icon: "ListChecks" },
     { label: "Calendário", href: "/calendar", icon: "CalendarDays" },
     { label: "Relatórios", href: "/reports", icon: "FileText" },
+    { label: "Receitas", href: "/revenue", icon: "DollarSign" },
   ];
 }

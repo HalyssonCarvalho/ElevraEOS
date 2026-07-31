@@ -243,3 +243,25 @@ export interface ClientCredential extends BaseRecord {
   created_by: string | null;
   updated_by: string | null;
 }
+
+// ---------------------------------------------------------------------------
+// RECEITA E COMISSÃO POR CLIENTE
+// ---------------------------------------------------------------------------
+
+export type RevenueStatus = "previsto" | "confirmado" | "cancelado";
+
+export interface ClientRevenue extends BaseRecord {
+  client_id: string;
+  organization_id: string;
+  month: string;           // formato "2026-07"
+  revenue_generated: number;  // receita que o cliente gerou
+  commission_pct: number;     // % acordado ex: 10 = 10%
+  commission_value: number;   // calculado: revenue_generated * commission_pct / 100
+  status: RevenueStatus;
+  notes: string | null;
+  created_by: string | null;
+}
+
+export interface ClientCommissionSettings {
+  commission_pct: number;   // % padrão acordado com este cliente
+}
