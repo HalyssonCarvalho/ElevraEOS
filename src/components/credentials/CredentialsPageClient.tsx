@@ -10,16 +10,16 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { CredentialForm } from "@/components/credentials/CredentialForm";
 import type { ClientCredential, CredentialCategory } from "@/lib/types/database";
 
-const categoryLabels: Record<CredentialCategory, { label: string; tone: "info" | "success" | "warning" | "danger" }> = {
-  social_media:    { label: "Redes sociais",   tone: "info" },
+const categoryLabels: Record<CredentialCategory, { label: string; tone: "neutral" | "accent" | "success" | "warning" | "danger" }> = {
+  social_media:    { label: "Redes sociais",   tone: "neutral" },
   ads:             { label: "Anúncios",         tone: "warning" },
   website:         { label: "Website",          tone: "success" },
-  crm:             { label: "CRM",              tone: "info" },
-  email_marketing: { label: "E-mail marketing", tone: "info" },
-  analytics:       { label: "Analytics",        tone: "info" },
-  hosting:         { label: "Hospedagem",       tone: "info" },
-  domain:          { label: "Domínio",          tone: "info" },
-  other:           { label: "Outros",           tone: "info" },
+  crm:             { label: "CRM",              tone: "neutral" },
+  email_marketing: { label: "E-mail marketing", tone: "neutral" },
+  analytics:       { label: "Analytics",        tone: "neutral" },
+  hosting:         { label: "Hospedagem",       tone: "neutral" },
+  domain:          { label: "Domínio",          tone: "neutral" },
+  other:           { label: "Outros",           tone: "neutral" },
 };
 
 function CredentialRow({ credential, onEdit, onDelete }: { credential: ClientCredential; onEdit: (c: ClientCredential) => void; onDelete: (id: string) => void; }) {
