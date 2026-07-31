@@ -95,7 +95,7 @@ export default async function ClientOverviewPage({ params }: { params: Promise<{
           <CardContent className="pt-3 flex flex-col gap-4">
             <GoalBar
               label="Leads"
-              current={overview.current ? undefined : undefined}
+              
               progress={overview.leadsGoalProgress}
               goalLabel={`Meta: ${formatNumber(client.monthly_leads_goal)}`}
             />
@@ -140,7 +140,7 @@ function GoalBar({
   goalLabel,
 }: {
   label: string;
-  current?: number;
+  
   progress: number | null;
   goalLabel: string;
 }) {

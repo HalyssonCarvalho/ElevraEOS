@@ -26,7 +26,7 @@ export function TasksPageClient({
   const [tasks, setTasks] = useState<Task[]>(initialTasks);
   const [showForm, setShowForm] = useState(false);
 
-  const today = new Date("2026-07-24");
+  const today = new Date(); // ✅ data real
 
   function updateStatus(taskId: string, status: TaskStatus) {
     setTasks((prev) => prev.map((t) => (t.id === taskId ? { ...t, status } : t)));

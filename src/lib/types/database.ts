@@ -218,3 +218,28 @@ export interface CalculatedMetrics {
   averageTicket: number | null;
   growthVsPrevious: number | null;
 }
+
+export type CredentialCategory =
+  | "social_media"
+  | "ads"
+  | "website"
+  | "crm"
+  | "email_marketing"
+  | "analytics"
+  | "hosting"
+  | "domain"
+  | "other";
+
+export interface ClientCredential extends BaseRecord {
+  client_id: string;
+  organization_id: string;
+  label: string;
+  category: CredentialCategory;
+  username: string;
+  password_plain?: string;
+  password_enc: string;
+  url: string | null;
+  notes: string | null;
+  created_by: string | null;
+  updated_by: string | null;
+}

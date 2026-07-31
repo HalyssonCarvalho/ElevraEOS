@@ -52,14 +52,14 @@ export function Sidebar() {
         {items.map((item) => {
           const Icon = iconMap[item.icon as keyof typeof iconMap];
           const active = pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href) && item.href !== `/clients/${clientId}`);
-          const exactActive = pathname === item.href;
+          
           return (
             <Link
               key={item.href}
               href={item.href}
               className={cn(
                 "flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
-                exactActive || (active && pathname.startsWith(item.href))
+                active
                   ? "bg-accent-soft text-accent"
                   : "text-text-secondary hover:text-text-primary hover:bg-surface-hover"
               )}
