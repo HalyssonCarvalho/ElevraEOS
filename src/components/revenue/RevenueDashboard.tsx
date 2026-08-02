@@ -1,14 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Clock, CheckCircle2, TrendingDown, Plus } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { RevenueForm } from "@/components/revenue/RevenueForm";
 import type { ClientRevenue } from "@/lib/types/database";
-import { demoClients } from "@/lib/data/mock-data";
-import { demoRevenues } from "@/lib/data/mock-revenue";
+import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
 
 function formatCurrency(value: number) {
   return new Intl.NumberFormat("en-US", {
@@ -25,16 +24,32 @@ const statusConfig = {
 };
 
 export function RevenueDashboard() {
-  const [revenues, setRevenues] = useState<ClientRevenue[]>(demoRevenues);
+  const [revenues, setRevenues] = useState<ClientRevenue[]>([]);
   const [showForm, setShowForm] = useState(false);
-  const currentMonth = "2026-07";
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchRevenues() {
+      const supabase = isSupabaseConfigured() ? createClient() : null;
+      if (supabase) {
+        const { data } = await supabase
+          .from("client_revenues")
+          .select("*")
+          .order("month", { ascending: false });
+        if (data) setRevenues(data);
+      }
+      setLoading(false);
+    }
+    fetchRevenues();
+  }, []);
+
+  const currentMonth = new Date().toISOString().slice(0, 7);
   const current = revenues.filter((r) => r.month === currentMonth);
-  const prev = revenues.filter((r) => r.month === "2026-06");
+  const history = revenues.filter((r) => r.month !== currentMonth);
 
   const previsto   = current.filter((r) => r.status === "previsto").reduce((s, r) => s + r.commission_value, 0);
   const confirmado = current.filter((r) => r.status === "confirmado").reduce((s, r) => s + r.commission_value, 0);
   const total      = previsto + confirmado;
-  const totalPrev  = prev.filter((r) => r.status === "confirmado").reduce((s, r) => s + r.commission_value, 0);
 
   function toggleStatus(id: string) {
     setRevenues((prev) =>
@@ -47,14 +62,16 @@ export function RevenueDashboard() {
   }
 
   function handleSave(revenue: ClientRevenue) {
-    setRevenues((prev) => [...prev, revenue]);
+    setRevenues((prev) => [revenue, ...prev]);
     setShowForm(false);
+  }
+
+  if (loading) {
+    return <div className="text-sm text-text-muted">Carregando receitas...</div>;
   }
 
   return (
     <div className="flex flex-col gap-6">
-
-      {/* Botão novo lançamento */}
       <div className="flex justify-end">
         <Button onClick={() => setShowForm(true)}>
           <Plus className="h-4 w-4" />
@@ -62,7 +79,6 @@ export function RevenueDashboard() {
         </Button>
       </div>
 
-      {/* Formulário */}
       {showForm && (
         <Card>
           <CardContent className="pt-4">
@@ -71,13 +87,12 @@ export function RevenueDashboard() {
         </Card>
       )}
 
-      {/* Cards de resumo */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <Card>
           <CardContent className="pt-5 flex flex-col gap-1">
             <span className="text-xs text-text-muted uppercase tracking-widest">Total do mês</span>
             <span className="text-3xl font-bold text-text-primary tabular-nums">{formatCurrency(total)}</span>
-            <span className="text-xs text-text-muted">vs {formatCurrency(totalPrev)} mês anterior</span>
+            <span className="text-xs text-text-muted">{currentMonth}</span>
           </CardContent>
         </Card>
         <Card className="border-warning/30 bg-warning-soft/30">
@@ -102,76 +117,64 @@ export function RevenueDashboard() {
         </Card>
       </div>
 
-      {/* Tabela por cliente */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Comissões por cliente — Julho 2026</CardTitle>
-        </CardHeader>
-        <CardContent className="pt-0">
-          <div className="flex flex-col divide-y divide-border">
-            <div className="grid grid-cols-5 gap-2 px-2 py-2 text-[11px] font-semibold text-text-muted uppercase tracking-widest">
-              <span className="col-span-2">Cliente</span>
-              <span className="text-right">Receita gerada</span>
-              <span className="text-right">Comissão</span>
-              <span className="text-right">Status</span>
-            </div>
-            {current.map((rev) => {
-              const client = demoClients.find((c) => c.id === rev.client_id);
-              const st = statusConfig[rev.status];
-              const Icon = st.icon;
-              return (
-                <div key={rev.id} className="grid grid-cols-5 gap-2 px-2 py-3 items-center hover:bg-surface-raised transition-colors rounded-lg">
-                  <div className="col-span-2">
-                    <span className="text-sm font-medium text-text-primary">{client?.company_name ?? rev.client_id}</span>
-                    {rev.notes && <p className="text-[11px] text-text-muted mt-0.5">{rev.notes}</p>}
-                  </div>
-                  <span className="text-sm text-right tabular-nums text-text-secondary">{formatCurrency(rev.revenue_generated)}</span>
-                  <div className="flex flex-col items-end">
-                    <span className="text-sm font-semibold text-text-primary tabular-nums">{formatCurrency(rev.commission_value)}</span>
-                    <span className="text-[11px] text-text-muted">{rev.commission_pct}% do resultado</span>
-                  </div>
-                  <div className="flex justify-end">
-                    <button onClick={() => toggleStatus(rev.id)}>
-                      <Badge tone={st.tone}>
-                        <Icon className="h-3 w-3 mr-1" />
-                        {st.label}
-                      </Badge>
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
-            <div className="grid grid-cols-5 gap-2 px-2 py-3 items-center">
-              <div className="col-span-2"><span className="text-sm font-bold">TOTAL</span></div>
-              <span className="text-sm text-right tabular-nums font-semibold">{formatCurrency(current.reduce((s, r) => s + r.revenue_generated, 0))}</span>
-              <div className="flex flex-col items-end">
-                <span className="text-sm font-bold tabular-nums">{formatCurrency(total)}</span>
+      {current.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Comissões — {currentMonth}</CardTitle>
+          </CardHeader>
+          <CardContent className="pt-0">
+            <div className="flex flex-col divide-y divide-border">
+              <div className="grid grid-cols-4 gap-2 px-2 py-2 text-[11px] font-semibold text-text-muted uppercase tracking-widest">
+                <span className="col-span-1">Cliente</span>
+                <span className="text-right">Receita gerada</span>
+                <span className="text-right">Comissão</span>
+                <span className="text-right">Status</span>
               </div>
-              <div />
+              {current.map((rev) => {
+                const st = statusConfig[rev.status] ?? statusConfig.previsto;
+                const Icon = st.icon;
+                return (
+                  <div key={rev.id} className="grid grid-cols-4 gap-2 px-2 py-3 items-center hover:bg-surface-raised transition-colors rounded-lg">
+                    <span className="text-sm font-medium text-text-primary truncate">{rev.client_id}</span>
+                    <span className="text-sm text-right tabular-nums text-text-secondary">{formatCurrency(rev.revenue_generated)}</span>
+                    <div className="flex flex-col items-end">
+                      <span className="text-sm font-semibold text-text-primary tabular-nums">{formatCurrency(rev.commission_value)}</span>
+                      <span className="text-[11px] text-text-muted">{rev.commission_pct}%</span>
+                    </div>
+                    <div className="flex justify-end">
+                      <button onClick={() => toggleStatus(rev.id)}>
+                        <Badge tone={st.tone}>
+                          <Icon className="h-3 w-3 mr-1" />
+                          {st.label}
+                        </Badge>
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      )}
 
-      {/* Histórico */}
-      <Card>
-        <CardHeader><CardTitle>Histórico</CardTitle></CardHeader>
-        <CardContent className="pt-0">
-          <div className="flex flex-col divide-y divide-border">
-            <div className="grid grid-cols-4 gap-2 px-2 py-2 text-[11px] font-semibold text-text-muted uppercase tracking-widest">
-              <span>Mês</span><span>Cliente</span><span className="text-right">Comissão</span><span className="text-right">Status</span>
-            </div>
-            {revenues
-              .filter((r) => r.month !== currentMonth)
-              .sort((a, b) => b.month.localeCompare(a.month))
-              .map((rev) => {
-                const client = demoClients.find((c) => c.id === rev.client_id);
-                const st = statusConfig[rev.status];
+      {history.length > 0 && (
+        <Card>
+          <CardHeader><CardTitle>Histórico</CardTitle></CardHeader>
+          <CardContent className="pt-0">
+            <div className="flex flex-col divide-y divide-border">
+              <div className="grid grid-cols-4 gap-2 px-2 py-2 text-[11px] font-semibold text-text-muted uppercase tracking-widest">
+                <span>Mês</span>
+                <span>Cliente</span>
+                <span className="text-right">Comissão</span>
+                <span className="text-right">Status</span>
+              </div>
+              {history.map((rev) => {
+                const st = statusConfig[rev.status] ?? statusConfig.previsto;
                 const Icon = st.icon;
                 return (
                   <div key={rev.id} className="grid grid-cols-4 gap-2 px-2 py-3 items-center hover:bg-surface-raised rounded-lg">
                     <span className="text-sm text-text-secondary">{rev.month}</span>
-                    <span className="text-sm text-text-primary">{client?.company_name ?? rev.client_id}</span>
+                    <span className="text-sm text-text-primary truncate">{rev.client_id}</span>
                     <span className="text-sm text-right tabular-nums font-semibold">{formatCurrency(rev.commission_value)}</span>
                     <div className="flex justify-end">
                       <Badge tone={st.tone}><Icon className="h-3 w-3 mr-1" />{st.label}</Badge>
@@ -179,9 +182,16 @@ export function RevenueDashboard() {
                   </div>
                 );
               })}
-          </div>
-        </CardContent>
-      </Card>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {revenues.length === 0 && !showForm && (
+        <div className="text-center py-12 text-sm text-text-muted">
+          Nenhuma receita lançada ainda. Clique em "Lançar receita" para começar.
+        </div>
+      )}
     </div>
   );
 }

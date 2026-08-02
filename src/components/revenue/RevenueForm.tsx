@@ -1,15 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import { toast } from "sonner";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Loader2 } from "lucide-react";
+import { toast } from "sonner";
 import { Input, Select, Textarea } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import type { ClientRevenue } from "@/lib/types/database";
 import { demoClients } from "@/lib/data/mock-data";
 import { clientCommissionPct } from "@/lib/data/mock-revenue";
+import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
 
 const schema = z.object({
   client_id:         z.string().min(1, "Selecione um cliente"),
@@ -52,7 +53,44 @@ export function RevenueForm({ onSave, onCancel }: Props) {
   async function onSubmit(values: FormValues) {
     setError(null);
     try {
+      const supabase = isSupabaseConfigured() ? createClient() : null;
+
+      const payload = {
+        client_id:         values.client_id,
+        month:             values.month,
+        revenue_generated: Number(values.revenue_generated),
+        commission_pct:    pct,
+        commission_value:  commission,
+        status:            values.status,
+        notes:             values.notes || null,
+      };
+
+      if (supabase) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("organization_id")
+          .single();
+
+        if (!profile) throw new Error("Perfil não encontrado.");
+
+        const { data, error: dbErr } = await supabase
+          .from("client_revenues")
+          .insert({ ...payload, organization_id: profile.organization_id })
+          .select()
+          .single();
+
+        if (dbErr) throw new Error(dbErr.message);
+
+        toast.success("Receita lançada com sucesso!");
+        onSave({
+          ...data,
+          created_by: null,
+        } as ClientRevenue);
+        return;
+      }
+
       await new Promise((r) => setTimeout(r, 300));
+      toast.success("Receita lançada com sucesso!");
       onSave({
         id:                `rev-${Date.now()}`,
         client_id:         values.client_id,
@@ -67,10 +105,10 @@ export function RevenueForm({ onSave, onCancel }: Props) {
         created_at:        new Date().toISOString(),
         updated_at:        new Date().toISOString(),
       });
-      toast.success("Receita lançada com sucesso!");
-    } catch {
-      toast.error("Erro ao salvar. Tente novamente.");
-      setError("Erro ao salvar. Tente novamente.");
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Erro ao salvar.";
+      setError(msg);
+      toast.error(msg);
     }
   }
 

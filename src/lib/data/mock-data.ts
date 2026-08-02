@@ -23,8 +23,8 @@ import type {
 export const DEMO_ORGANIZATION_ID = "00000000-0000-0000-0000-000000000001";
 
 export const demoProfiles = [
-  { id: "p-admin-1", full_name: "Marina Duarte", email: "marina@elevra.digital", role: "admin" as const },
-  { id: "p-consultor-1", full_name: "Rafael Nogueira", email: "rafael@elevra.digital", role: "consultor" as const },
+  { id: "p-admin-1", full_name: "Halysson Albert", email: "halysson.albert@gmail.com", role: "admin" as const },
+  { id: "p-consultor-1", full_name: "Alisson Marcondes", email: "alissonmarcondees@gmail.com", role: "consultor" as const },
   { id: "p-consultor-2", full_name: "Bianca Ferraz", email: "bianca@elevra.digital", role: "consultor" as const },
 ];
 
