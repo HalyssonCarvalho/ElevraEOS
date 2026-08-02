@@ -140,13 +140,13 @@ export default async function DashboardPage() {
         <Card>
           <CardHeader><CardTitle>Leads por semana</CardTitle></CardHeader>
           <CardContent className="pt-3">
-            <LeadsChart data={summary.weeklyLeadsChart} />
+            <LeadsChart data={summary.weeklyLeads} />
           </CardContent>
         </Card>
         <Card>
           <CardHeader><CardTitle>Receita mensal</CardTitle></CardHeader>
           <CardContent className="pt-3">
-            <RevenueChart data={summary.monthlyRevenueChart} />
+            <RevenueChart data={summary.monthlyRevenue} />
           </CardContent>
         </Card>
       </div>
