@@ -5,6 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { format } from "date-fns";
 import { Loader2 } from "lucide-react";
+import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Input, Select, Textarea } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
@@ -56,7 +57,7 @@ export function CalendarItemForm({
     resolver: zodResolver(itemSchema),
     defaultValues: {
       client_id: clientId ?? "",
-      date: defaultDate ? format(defaultDate, "yyyy-MM-dd") : format(new Date("2026-07-24"), "yyyy-MM-dd"),
+      date: defaultDate ? format(defaultDate, "yyyy-MM-dd") : format(new Date(), "yyyy-MM-dd"),
       content_type: "post_estatico",
       status: "ideia",
     },
@@ -85,7 +86,7 @@ export function CalendarItemForm({
     if (supabase) {
       const { error } = await supabase.from("content_calendar").insert({ ...item, id: undefined });
       if (error) {
-        alert("Não foi possível salvar o item: " + error.message);
+        toast.error("Não foi possível salvar o item: " + error.message);
         return;
       }
     } else {
@@ -93,6 +94,7 @@ export function CalendarItemForm({
     }
 
     onAdd(item);
+    toast.success("Item salvo com sucesso!");
   }
 
   return (

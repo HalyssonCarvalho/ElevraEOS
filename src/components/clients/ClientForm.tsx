@@ -6,6 +6,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Loader2, CheckCircle2 } from "lucide-react";
+import { toast } from "sonner";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Input, Select, Textarea } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
@@ -57,8 +58,7 @@ export function ClientForm() {
         website: values.website || null,
       });
       if (error) {
-        alert("Não foi possível salvar o cliente: " + error.message);
-        return;
+        toast.error("Não foi possível salvar o cliente: " + error.message);
       }
     } else {
       // Modo de demonstração: sem Supabase configurado, apenas simula o

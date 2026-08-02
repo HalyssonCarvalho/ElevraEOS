@@ -4,6 +4,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Loader2 } from "lucide-react";
+import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Input, Select, Textarea } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
@@ -77,7 +78,7 @@ export function KpiForm({ clientId, onAdd }: { clientId: string; onAdd: (entry: 
         average_ticket,
       });
       if (error) {
-        alert("Não foi possível salvar o KPI: " + error.message);
+        toast.error("Não foi possível salvar o KPI: " + error.message);
         return;
       }
     } else {
@@ -86,6 +87,7 @@ export function KpiForm({ clientId, onAdd }: { clientId: string; onAdd: (entry: 
 
     onAdd(entry);
     reset();
+    toast.success("KPI salvo com sucesso!");
   }
 
   return (

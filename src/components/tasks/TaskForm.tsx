@@ -4,6 +4,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Loader2 } from "lucide-react";
+import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Input, Select, Textarea } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
@@ -53,7 +54,7 @@ export function TaskForm({ clientId, onAdd }: { clientId: string | null; onAdd: 
     if (supabase) {
       const { error } = await supabase.from("tasks").insert({ ...task, id: undefined });
       if (error) {
-        alert("Não foi possível salvar a tarefa: " + error.message);
+        toast.error("Não foi possível salvar a tarefa: " + error.message);
         return;
       }
     } else {
@@ -61,6 +62,8 @@ export function TaskForm({ clientId, onAdd }: { clientId: string | null; onAdd: 
     }
 
     onAdd(task);
+    toast.success("Tarefa salva com sucesso!");
+    
   }
 
   return (

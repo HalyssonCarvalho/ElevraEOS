@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Loader2, CheckCircle2, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Input, Select, Textarea } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
@@ -65,12 +66,13 @@ export function ClientSettingsForm({ client }: { client: Client }) {
         .update({ ...values, website: values.website || null })
         .eq("id", client.id);
       if (error) {
-        alert("Não foi possível salvar as alterações: " + error.message);
+        toast.error("Não foi possível salvar as alterações: " + error.message);
         return;
       }
     } else {
       await new Promise((r) => setTimeout(r, 400));
     }
+    toast.success("Alterações salvas com sucesso!");
     setSaved(true);
     setTimeout(() => setSaved(false), 2500);
   }
@@ -151,7 +153,7 @@ export function ClientSettingsForm({ client }: { client: Client }) {
             Excluir este cliente remove permanentemente todos os KPIs, campanhas, tarefas e relatórios
             associados. Esta ação está disponível apenas para administradores.
           </p>
-          <Button variant="danger" size="sm" onClick={() => alert("Exclusão disponível apenas para administradores com Supabase configurado.")}>
+          <Button variant="danger" size="sm" onClick={() => toast.error("Exclusão disponível apenas para administradores com Supabase configurado.")}
             <Trash2 className="h-3.5 w-3.5" />
             Excluir cliente
           </Button>

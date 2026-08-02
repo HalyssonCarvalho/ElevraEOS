@@ -4,6 +4,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Loader2 } from "lucide-react";
+import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Input, Textarea } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
@@ -61,7 +62,7 @@ export function ScoreForm({ clientId, onAdd }: { clientId: string; onAdd: (s: El
     if (supabase) {
       const { error } = await supabase.from("elevra_scores").insert({ ...score, id: undefined });
       if (error) {
-        alert("Não foi possível salvar a avaliação: " + error.message);
+        toast.error("Não foi possível salvar a avaliação: " + error.message);
         return;
       }
     } else {
@@ -69,6 +70,7 @@ export function ScoreForm({ clientId, onAdd }: { clientId: string; onAdd: (s: El
     }
 
     onAdd(score);
+    toast.success("Avaliação salva com sucesso!");
   }
 
   return (
