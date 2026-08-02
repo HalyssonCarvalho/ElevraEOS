@@ -88,8 +88,9 @@ export default async function DashboardPage() {
         />
         <StatCard
           label="ROI médio"
-          value={summary.avgRoi === null ? "—" : formatPercent(summary.avgRoi)}
+          value="—"
           icon={<ArrowUpRight className="h-4 w-4" />}
+        />
         />
         <StatCard
           label="Tarefas atrasadas"
