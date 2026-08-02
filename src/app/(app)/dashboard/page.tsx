@@ -15,7 +15,6 @@ import { createClient } from "@/lib/supabase/server";
 export default async function DashboardPage() {
   const supabase = await createClient();
 
-  // Clientes reais ou mock
   let clients = getClientListItems();
   if (supabase) {
     const { data } = await supabase.from("clients").select("*").order("company_name");
@@ -24,18 +23,15 @@ export default async function DashboardPage() {
     }
   }
 
-  // Receitas reais
   let revSummary = { previsto: 0, confirmado: 0, total: 0, prevMonth: 0 };
   if (supabase) {
     const currentMonth = new Date().toISOString().slice(0, 7);
     const prevMonthDate = new Date();
     prevMonthDate.setMonth(prevMonthDate.getMonth() - 1);
     const prevMonthStr = prevMonthDate.toISOString().slice(0, 7);
-
     const { data: revenues } = await supabase
       .from("client_revenues")
       .select("commission_value, status, month");
-
     if (revenues) {
       const current = revenues.filter((r) => r.month === currentMonth);
       const prev = revenues.filter((r) => r.month === prevMonthStr);
@@ -70,10 +66,6 @@ export default async function DashboardPage() {
         <StatCard
           label="Leads na semana"
           value={formatNumber(summary.weeklyLeads)}
-          delta={summary.weeklyLeadsGrowth === null ? null : {
-            value: formatPercent(summary.weeklyLeadsGrowth, { showSign: true }),
-            positive: summary.weeklyLeadsGrowth >= 0,
-          }}
           icon={<TrendingUp className="h-4 w-4" />}
         />
         <StatCard
@@ -90,7 +82,6 @@ export default async function DashboardPage() {
           label="ROI médio"
           value="—"
           icon={<ArrowUpRight className="h-4 w-4" />}
-        />
         />
         <StatCard
           label="Tarefas atrasadas"
@@ -121,7 +112,6 @@ export default async function DashboardPage() {
         </Card>
       </div>
 
-      {/* Bloco financeiro */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <Card className="border-accent/30 bg-accent-soft/20">
           <CardContent className="pt-5 flex flex-col gap-1">
