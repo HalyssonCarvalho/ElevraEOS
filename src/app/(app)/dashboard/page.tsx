@@ -10,26 +10,45 @@ import { getDashboardSummary, getClientListItems } from "@/lib/data/aggregations
 import { demoTasks } from "@/lib/data/mock-data";
 import { clientStatusLabels, taskPriorityLabels } from "@/lib/labels";
 import { formatCurrency, formatDate, formatNumber, formatPercent } from "@/lib/utils/format";
-import { getDashboardRevenueSummary } from "@/lib/data/mock-revenue";
-import { demoRevenues } from "@/lib/data/mock-revenue";
 import { createClient } from "@/lib/supabase/server";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
-  let clients = getClientListItems();
 
+  // Clientes reais ou mock
+  let clients = getClientListItems();
   if (supabase) {
-    const { data } = await supabase
-      .from("clients")
-      .select("*")
-      .order("company_name");
+    const { data } = await supabase.from("clients").select("*").order("company_name");
     if (data && data.length > 0) {
       clients = data.map((c) => ({ ...c, monthLeads: 0, monthRevenue: 0, score: null }));
     }
   }
 
+  // Receitas reais
+  let revSummary = { previsto: 0, confirmado: 0, total: 0, prevMonth: 0 };
+  if (supabase) {
+    const currentMonth = new Date().toISOString().slice(0, 7);
+    const prevMonthDate = new Date();
+    prevMonthDate.setMonth(prevMonthDate.getMonth() - 1);
+    const prevMonthStr = prevMonthDate.toISOString().slice(0, 7);
+
+    const { data: revenues } = await supabase
+      .from("client_revenues")
+      .select("commission_value, status, month");
+
+    if (revenues) {
+      const current = revenues.filter((r) => r.month === currentMonth);
+      const prev = revenues.filter((r) => r.month === prevMonthStr);
+      revSummary = {
+        previsto:   current.filter((r) => r.status === "previsto").reduce((s, r) => s + r.commission_value, 0),
+        confirmado: current.filter((r) => r.status === "confirmado").reduce((s, r) => s + r.commission_value, 0),
+        total:      current.reduce((s, r) => s + r.commission_value, 0),
+        prevMonth:  prev.reduce((s, r) => s + r.commission_value, 0),
+      };
+    }
+  }
+
   const summary = getDashboardSummary();
-  const revSummary = getDashboardRevenueSummary();
   const upcomingTasks = [...demoTasks]
     .filter((t) => t.status !== "concluida" && t.status !== "cancelada")
     .sort((a, b) => a.due_date.localeCompare(b.due_date))
@@ -45,32 +64,31 @@ export default async function DashboardPage() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
           label="Clientes ativos"
-          value={formatNumber(summary.activeClients)}
+          value={formatNumber(clients.filter((c) => c.status === "ativo").length)}
           icon={<Users className="h-4 w-4" />}
         />
         <StatCard
           label="Leads na semana"
           value={formatNumber(summary.weeklyLeads)}
-          delta={
-            summary.weeklyLeadsGrowth === null
-              ? null
-              : { value: formatPercent(summary.weeklyLeadsGrowth, { showSign: true }), positive: summary.weeklyLeadsGrowth >= 0 }
-          }
+          delta={summary.weeklyLeadsGrowth === null ? null : {
+            value: formatPercent(summary.weeklyLeadsGrowth, { showSign: true }),
+            positive: summary.weeklyLeadsGrowth >= 0,
+          }}
           icon={<TrendingUp className="h-4 w-4" />}
         />
         <StatCard
           label="Receita no mês"
-          value={formatCurrency(summary.monthlyRevenue, { compact: true })}
+          value={formatCurrency(summary.monthRevenue, { compact: true })}
           icon={<DollarSign className="h-4 w-4" />}
         />
         <StatCard
           label="Investimento em marketing"
-          value={formatCurrency(summary.monthlyInvestment, { compact: true })}
+          value={formatCurrency(summary.monthInvestment, { compact: true })}
           icon={<Target className="h-4 w-4" />}
         />
         <StatCard
           label="ROI médio"
-          value={summary.averageRoi === null ? "—" : formatPercent(summary.averageRoi)}
+          value={summary.avgRoi === null ? "—" : formatPercent(summary.avgRoi)}
           icon={<ArrowUpRight className="h-4 w-4" />}
         />
         <StatCard
@@ -83,129 +101,111 @@ export default async function DashboardPage() {
           value={formatNumber(summary.activeCampaigns)}
           icon={<Megaphone className="h-4 w-4" />}
         />
-        <Card className="p-5 flex flex-col gap-2.5">
-          <span className="text-xs font-medium text-text-secondary">Alertas importantes</span>
-          {summary.alerts.length === 0 ? (
-            <span className="text-xs text-text-muted">Nenhum alerta no momento.</span>
-          ) : (
-            <div className="flex flex-col gap-1.5">
-              {summary.alerts.slice(0, 2).map((a) => (
-                <div key={a.id} className="flex items-start gap-1.5 text-[11px] text-text-secondary">
-                  <span className={`mt-1 h-1.5 w-1.5 rounded-full shrink-0 ${a.tone === "danger" ? "bg-danger" : "bg-warning"}`} />
-                  {a.message}
-                </div>
-              ))}
-            </div>
-          )}
+        <Card>
+          <CardContent className="pt-4 flex flex-col gap-1 h-full justify-center">
+            <span className="text-xs text-text-muted">Alertas importantes</span>
+            {summary.alerts.length === 0 ? (
+              <span className="text-xs text-text-muted">Nenhum alerta no momento.</span>
+            ) : (
+              <ul className="flex flex-col gap-1">
+                {summary.alerts.slice(0, 3).map((a) => (
+                  <li key={a.id} className="flex items-start gap-1.5 text-[11px]">
+                    <span className={a.tone === "danger" ? "text-danger" : "text-warning"}>●</span>
+                    <span className="text-text-secondary leading-tight">{a.message}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </CardContent>
         </Card>
       </div>
+
       {/* Bloco financeiro */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <Card className="border-accent/30 bg-accent-soft/20">
           <CardContent className="pt-5 flex flex-col gap-1">
             <span className="text-xs text-text-muted uppercase tracking-widest">Comissão total do mês</span>
-            <span className="text-3xl font-bold text-text-primary tabular-nums">
-              {formatCurrency(revSummary.total)}
-            </span>
+            <span className="text-3xl font-bold text-text-primary tabular-nums">{formatCurrency(revSummary.total)}</span>
             <span className="text-xs text-text-muted">vs {formatCurrency(revSummary.prevMonth)} mês anterior</span>
           </CardContent>
         </Card>
         <Card className="border-warning/30 bg-warning-soft/20">
           <CardContent className="pt-5 flex flex-col gap-1">
             <span className="text-xs text-warning uppercase tracking-widest font-semibold">Previsto</span>
-            <span className="text-3xl font-bold text-text-primary tabular-nums">
-              {formatCurrency(revSummary.previsto)}
-            </span>
+            <span className="text-3xl font-bold text-text-primary tabular-nums">{formatCurrency(revSummary.previsto)}</span>
             <span className="text-xs text-text-muted">Aguardando confirmação</span>
           </CardContent>
         </Card>
         <Card className="border-success/30 bg-success-soft/20">
           <CardContent className="pt-5 flex flex-col gap-1">
             <span className="text-xs text-success uppercase tracking-widest font-semibold">Confirmado</span>
-            <span className="text-3xl font-bold text-text-primary tabular-nums">
-              {formatCurrency(revSummary.confirmado)}
-            </span>
+            <span className="text-3xl font-bold text-text-primary tabular-nums">{formatCurrency(revSummary.confirmado)}</span>
             <span className="text-xs text-text-muted">Já garantido</span>
           </CardContent>
         </Card>
       </div>
+
       <div className="grid lg:grid-cols-2 gap-4">
         <Card>
-          <CardHeader>
-            <CardTitle>Leads por semana</CardTitle>
-          </CardHeader>
+          <CardHeader><CardTitle>Leads por semana</CardTitle></CardHeader>
           <CardContent className="pt-3">
-            <LeadsChart data={summary.leadsByWeek} />
+            <LeadsChart data={summary.weeklyLeadsChart} />
           </CardContent>
         </Card>
         <Card>
-          <CardHeader>
-            <CardTitle>Receita mensal</CardTitle>
-          </CardHeader>
+          <CardHeader><CardTitle>Receita mensal</CardTitle></CardHeader>
           <CardContent className="pt-3">
-            <RevenueChart data={summary.revenueByWeek} />
+            <RevenueChart data={summary.monthlyRevenueChart} />
           </CardContent>
         </Card>
       </div>
 
-      <div className="grid lg:grid-cols-3 gap-4">
-        <Card className="lg:col-span-2">
+      <div className="grid lg:grid-cols-2 gap-4">
+        <Card>
           <CardHeader>
             <CardTitle>Clientes</CardTitle>
-            <Link href="/clients" className="text-xs text-accent hover:text-accent-hover font-medium">
-              Ver todos
-            </Link>
+            <Link href="/clients" className="text-xs text-accent hover:underline">Ver todos</Link>
           </CardHeader>
-          <CardContent className="pt-3">
+          <CardContent className="pt-0">
             <div className="flex flex-col divide-y divide-border">
-              {clients.map((c) => {
-                const status = clientStatusLabels[c.status];
+              {clients.slice(0, 5).map((c) => {
+                const st = clientStatusLabels[c.status];
                 return (
-                  <Link
-                    key={c.id}
-                    href={`/clients/${c.id}`}
-                    className="flex items-center justify-between gap-3 py-3 hover:bg-surface-hover -mx-1 px-1 rounded-md transition-colors"
-                  >
-                    <div className="min-w-0">
-                      <p className="text-sm font-medium text-text-primary truncate">{c.company_name}</p>
-                      <p className="text-xs text-text-muted truncate">{c.segment}</p>
-                    </div>
-                    <div className="flex items-center gap-4 shrink-0">
-                      <span className="hidden sm:block text-xs text-text-secondary tabular-nums">
-                        {formatCurrency(c.monthRevenue, { compact: true })}
-                      </span>
-                      <Badge tone={status.tone}>{status.label}</Badge>
-                    </div>
+                  <Link key={c.id} href={`/clients/${c.id}`} className="flex items-center justify-between py-2.5 hover:bg-surface-raised px-2 rounded-lg transition-colors">
+                    <span className="text-sm text-text-primary">{c.company_name}</span>
+                    <Badge tone={st.tone}>{st.label}</Badge>
                   </Link>
                 );
               })}
+              {clients.length === 0 && (
+                <p className="text-sm text-text-muted py-4 text-center">Nenhum cliente cadastrado ainda.</p>
+              )}
             </div>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle>Próximas tarefas</CardTitle>
-            <Link href="/tasks" className="text-xs text-accent hover:text-accent-hover font-medium">
-              Ver todas
-            </Link>
+            <CardTitle>Tarefas próximas</CardTitle>
+            <Link href="/tasks" className="text-xs text-accent hover:underline">Ver todas</Link>
           </CardHeader>
-          <CardContent className="pt-3">
+          <CardContent className="pt-0">
             <div className="flex flex-col divide-y divide-border">
               {upcomingTasks.map((t) => {
-                const priority = taskPriorityLabels[t.priority];
+                const p = taskPriorityLabels[t.priority];
                 return (
-                  <div key={t.id} className="py-3 flex flex-col gap-1.5">
-                    <p className="text-sm text-text-primary leading-snug">{t.title}</p>
-                    <div className="flex items-center gap-2">
-                      <Badge tone={priority.tone}>{priority.label}</Badge>
-                      <span className="text-[11px] text-text-muted">
-                        Entrega {formatDate(t.due_date)}
-                      </span>
+                  <div key={t.id} className="flex items-center justify-between py-2.5 px-2">
+                    <div className="flex flex-col min-w-0">
+                      <span className="text-sm text-text-primary truncate">{t.title}</span>
+                      <span className="text-[11px] text-text-muted">{formatDate(t.due_date)}</span>
                     </div>
+                    <Badge tone={p.tone}>{p.label}</Badge>
                   </div>
                 );
               })}
+              {upcomingTasks.length === 0 && (
+                <p className="text-sm text-text-muted py-4 text-center">Nenhuma tarefa pendente.</p>
+              )}
             </div>
           </CardContent>
         </Card>
