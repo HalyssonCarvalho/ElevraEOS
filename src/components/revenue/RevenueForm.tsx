@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { toast } from "sonner";
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Loader2 } from "lucide-react";
 import { Input, Select, Textarea } from "@/components/ui/Input";
@@ -15,9 +14,9 @@ import { clientCommissionPct } from "@/lib/data/mock-revenue";
 const schema = z.object({
   client_id:         z.string().min(1, "Selecione um cliente"),
   month:             z.string().min(1, "Informe o mês"),
-  revenue_generated: z.number().min(0, "Informe a receita"),
+  revenue_generated: z.string().min(1, "Informe a receita"),
   status:            z.enum(["previsto", "confirmado"]),
-  notes:             z.string().optional().or(z.literal("")),
+  notes:             z.string().optional(),
 });
 
 type FormValues = z.infer<typeof schema>;
@@ -28,7 +27,6 @@ interface Props {
 }
 
 export function RevenueForm({ onSave, onCancel }: Props) {
-  const [preview, setPreview] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const {
@@ -37,11 +35,10 @@ export function RevenueForm({ onSave, onCancel }: Props) {
     watch,
     formState: { errors, isSubmitting },
   } = useForm<FormValues>({
-    resolver: zodResolver(schema),
     defaultValues: {
       client_id:         "",
       month:             new Date().toISOString().slice(0, 7),
-      revenue_generated: 0,
+      revenue_generated: "",
       status:            "previsto",
       notes:             "",
     },
@@ -57,25 +54,24 @@ export function RevenueForm({ onSave, onCancel }: Props) {
     try {
       await new Promise((r) => setTimeout(r, 300));
       onSave({
-        id:               `rev-${Date.now()}`,
-        client_id:        values.client_id,
-        organization_id:  "00000000-0000-0000-0000-000000000001",
-        month:            values.month,
-        revenue_generated: values.revenue_generated,
-        commission_pct:   pct,
-        commission_value: commission,
-        status:           values.status,
-        notes:            values.notes || null,
-        created_by:       null,
-        created_at:       new Date().toISOString(),
-        updated_at:       new Date().toISOString(),
+        id:                `rev-${Date.now()}`,
+        client_id:         values.client_id,
+        organization_id:   "00000000-0000-0000-0000-000000000001",
+        month:             values.month,
+        revenue_generated: Number(values.revenue_generated),
+        commission_pct:    pct,
+        commission_value:  commission,
+        status:            values.status,
+        notes:             values.notes || null,
+        created_by:        null,
+        created_at:        new Date().toISOString(),
+        updated_at:        new Date().toISOString(),
       });
       toast.success("Receita lançada com sucesso!");
     } catch {
       toast.error("Erro ao salvar. Tente novamente.");
       setError("Erro ao salvar. Tente novamente.");
     }
-  }
   }
 
   return (
