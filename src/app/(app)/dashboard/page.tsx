@@ -4,8 +4,6 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { StatCard } from "@/components/ui/StatCard";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
-import { LeadsChart } from "@/components/charts/LeadsChart";
-import { RevenueChart } from "@/components/charts/RevenueChart";
 import { getDashboardSummary, getClientListItems } from "@/lib/data/aggregations";
 import { demoTasks } from "@/lib/data/mock-data";
 import { clientStatusLabels, taskPriorityLabels } from "@/lib/labels";
@@ -132,21 +130,6 @@ export default async function DashboardPage() {
             <span className="text-xs text-success uppercase tracking-widest font-semibold">Confirmado</span>
             <span className="text-3xl font-bold text-text-primary tabular-nums">{formatCurrency(revSummary.confirmado)}</span>
             <span className="text-xs text-text-muted">Já garantido</span>
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="grid lg:grid-cols-2 gap-4">
-        <Card>
-          <CardHeader><CardTitle>Leads por semana</CardTitle></CardHeader>
-          <CardContent className="pt-3">
-            <LeadsChart data={summary.weeklyLeads} />
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader><CardTitle>Receita mensal</CardTitle></CardHeader>
-          <CardContent className="pt-3">
-            <RevenueChart data={summary.monthlyRevenue} />
           </CardContent>
         </Card>
       </div>
