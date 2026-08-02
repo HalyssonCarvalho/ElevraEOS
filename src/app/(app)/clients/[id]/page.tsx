@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { LeadsChart } from "@/components/charts/LeadsChart";
 import { formatCurrency, formatNumber, formatPercent } from "@/lib/utils/format";
+import { ExportPdfButton } from "@/components/reports/ExportPdfButton";
 
 export default async function ClientOverviewPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -25,7 +26,15 @@ export default async function ClientOverviewPage({ params }: { params: Promise<{
       week,
       leads: entries.filter((e) => e.period_end === week).reduce((sum, e) => sum + e.leads, 0),
     }));
-
+  const metrics = {
+    leads: overview.current.leads,
+    revenue: overview.current.revenue,
+    investment: overview.current.investment,
+    sales: overview.current.sales,
+    cpl: overview.cpl,
+    roi: overview.roi,
+    conversionRate: overview.conversionRate,
+  };
   if (entries.length === 0) {
     return (
       <EmptyState
@@ -42,6 +51,9 @@ export default async function ClientOverviewPage({ params }: { params: Promise<{
 
   return (
     <div className="flex flex-col gap-6">
+      <div className="flex justify-end">
+        <ExportPdfButton client={client} metrics={metrics} score={score ? score.overall_score : null} />
+      </div>
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <MetricCard
           label="Leads (última semana)"
