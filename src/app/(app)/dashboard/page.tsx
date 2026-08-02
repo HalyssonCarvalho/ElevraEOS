@@ -10,10 +10,13 @@ import { getDashboardSummary, getClientListItems } from "@/lib/data/aggregations
 import { demoTasks } from "@/lib/data/mock-data";
 import { clientStatusLabels, taskPriorityLabels } from "@/lib/labels";
 import { formatCurrency, formatDate, formatNumber, formatPercent } from "@/lib/utils/format";
+import { getDashboardRevenueSummary } from "@/lib/data/mock-revenue";
+import { demoRevenues } from "@/lib/data/mock-revenue";
 
 export default function DashboardPage() {
   const summary = getDashboardSummary();
   const clients = getClientListItems();
+  const revSummary = getDashboardRevenueSummary();
   const upcomingTasks = [...demoTasks]
     .filter((t) => t.status !== "concluida" && t.status !== "cancelada")
     .sort((a, b) => a.due_date.localeCompare(b.due_date))
@@ -83,7 +86,36 @@ export default function DashboardPage() {
           )}
         </Card>
       </div>
-
+      {/* Bloco financeiro */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <Card className="border-accent/30 bg-accent-soft/20">
+          <CardContent className="pt-5 flex flex-col gap-1">
+            <span className="text-xs text-text-muted uppercase tracking-widest">Comissão total do mês</span>
+            <span className="text-3xl font-bold text-text-primary tabular-nums">
+              {formatCurrency(revSummary.total)}
+            </span>
+            <span className="text-xs text-text-muted">vs {formatCurrency(revSummary.prevMonth)} mês anterior</span>
+          </CardContent>
+        </Card>
+        <Card className="border-warning/30 bg-warning-soft/20">
+          <CardContent className="pt-5 flex flex-col gap-1">
+            <span className="text-xs text-warning uppercase tracking-widest font-semibold">Previsto</span>
+            <span className="text-3xl font-bold text-text-primary tabular-nums">
+              {formatCurrency(revSummary.previsto)}
+            </span>
+            <span className="text-xs text-text-muted">Aguardando confirmação</span>
+          </CardContent>
+        </Card>
+        <Card className="border-success/30 bg-success-soft/20">
+          <CardContent className="pt-5 flex flex-col gap-1">
+            <span className="text-xs text-success uppercase tracking-widest font-semibold">Confirmado</span>
+            <span className="text-3xl font-bold text-text-primary tabular-nums">
+              {formatCurrency(revSummary.confirmado)}
+            </span>
+            <span className="text-xs text-text-muted">Já garantido</span>
+          </CardContent>
+        </Card>
+      </div>
       <div className="grid lg:grid-cols-2 gap-4">
         <Card>
           <CardHeader>
