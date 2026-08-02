@@ -153,7 +153,7 @@ export function ClientSettingsForm({ client }: { client: Client }) {
             Excluir este cliente remove permanentemente todos os KPIs, campanhas, tarefas e relatórios
             associados. Esta ação está disponível apenas para administradores.
           </p>
-          <Button variant="danger" size="sm" onClick={() => toast.error("Exclusão disponível apenas para administradores com Supabase configurado.")}
+          <Button variant="danger" size="sm" onClick={() => toast.error("Exclusão disponível apenas para administradores com Supabase configurado.")}>
             <Trash2 className="h-3.5 w-3.5" />
             Excluir cliente
           </Button>
