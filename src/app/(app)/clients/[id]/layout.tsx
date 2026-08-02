@@ -58,6 +58,7 @@ export default async function ClientLayout({
           { label: "Calendário", href: `${base}/calendar` },
           { label: "Tarefas", href: `${base}/tasks` },
           { label: "Relatórios", href: `${base}/reports` },
+          { label: "Pipeline", href: `${base}/pipeline` },
           { label: "🔑 Credenciais", href: `${base}/credentials` },
           { label: "Configurações", href: `${base}/settings` },
         ]}
