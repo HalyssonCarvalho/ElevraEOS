@@ -1,9 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { Clock, CheckCircle2, TrendingDown } from "lucide-react";
+import { Clock, CheckCircle2, TrendingDown, Plus } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
+import { Button } from "@/components/ui/Button";
+import { RevenueForm } from "@/components/revenue/RevenueForm";
 import type { ClientRevenue } from "@/lib/types/database";
 import { demoClients } from "@/lib/data/mock-data";
 import { demoRevenues } from "@/lib/data/mock-revenue";
@@ -24,6 +26,7 @@ const statusConfig = {
 
 export function RevenueDashboard() {
   const [revenues, setRevenues] = useState<ClientRevenue[]>(demoRevenues);
+  const [showForm, setShowForm] = useState(false);
   const currentMonth = "2026-07";
   const current = revenues.filter((r) => r.month === currentMonth);
   const prev = revenues.filter((r) => r.month === "2026-06");
@@ -43,8 +46,32 @@ export function RevenueDashboard() {
     );
   }
 
+  function handleSave(revenue: ClientRevenue) {
+    setRevenues((prev) => [...prev, revenue]);
+    setShowForm(false);
+  }
+
   return (
     <div className="flex flex-col gap-6">
+
+      {/* Botão novo lançamento */}
+      <div className="flex justify-end">
+        <Button onClick={() => setShowForm(true)}>
+          <Plus className="h-4 w-4" />
+          Lançar receita
+        </Button>
+      </div>
+
+      {/* Formulário */}
+      {showForm && (
+        <Card>
+          <CardContent className="pt-4">
+            <RevenueForm onSave={handleSave} onCancel={() => setShowForm(false)} />
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Cards de resumo */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <Card>
           <CardContent className="pt-5 flex flex-col gap-1">
@@ -59,98 +86,4 @@ export function RevenueDashboard() {
               <Clock className="h-3.5 w-3.5 text-warning" />
               <span className="text-xs text-warning uppercase tracking-widest font-semibold">Previsto</span>
             </div>
-            <span className="text-3xl font-bold text-text-primary tabular-nums">{formatCurrency(previsto)}</span>
-            <span className="text-xs text-text-muted">Aguardando confirmação</span>
-          </CardContent>
-        </Card>
-        <Card className="border-success/30 bg-success-soft/30">
-          <CardContent className="pt-5 flex flex-col gap-1">
-            <div className="flex items-center gap-1.5">
-              <CheckCircle2 className="h-3.5 w-3.5 text-success" />
-              <span className="text-xs text-success uppercase tracking-widest font-semibold">Confirmado</span>
-            </div>
-            <span className="text-3xl font-bold text-text-primary tabular-nums">{formatCurrency(confirmado)}</span>
-            <span className="text-xs text-text-muted">Já garantido</span>
-          </CardContent>
-        </Card>
-      </div>
-
-      <Card>
-        <CardHeader><CardTitle>Comissões por cliente — Julho 2026</CardTitle></CardHeader>
-        <CardContent className="pt-0">
-          <div className="flex flex-col divide-y divide-border">
-            <div className="grid grid-cols-5 gap-2 px-2 py-2 text-[11px] font-semibold text-text-muted uppercase tracking-widest">
-              <span className="col-span-2">Cliente</span>
-              <span className="text-right">Receita gerada</span>
-              <span className="text-right">Comissão</span>
-              <span className="text-right">Status</span>
-            </div>
-            {current.map((rev) => {
-              const client = demoClients.find((c) => c.id === rev.client_id);
-              const st = statusConfig[rev.status];
-              const Icon = st.icon;
-              return (
-                <div key={rev.id} className="grid grid-cols-5 gap-2 px-2 py-3 items-center hover:bg-surface-raised transition-colors rounded-lg">
-                  <div className="col-span-2">
-                    <span className="text-sm font-medium text-text-primary">{client?.company_name ?? rev.client_id}</span>
-                    {rev.notes && <p className="text-[11px] text-text-muted mt-0.5">{rev.notes}</p>}
-                  </div>
-                  <span className="text-sm text-right tabular-nums text-text-secondary">{formatCurrency(rev.revenue_generated)}</span>
-                  <div className="flex flex-col items-end">
-                    <span className="text-sm font-semibold text-text-primary tabular-nums">{formatCurrency(rev.commission_value)}</span>
-                    <span className="text-[11px] text-text-muted">{rev.commission_pct}% do resultado</span>
-                  </div>
-                  <div className="flex justify-end">
-                    <button onClick={() => toggleStatus(rev.id)}>
-                      <Badge tone={st.tone}>
-                        <Icon className="h-3 w-3 mr-1" />
-                        {st.label}
-                      </Badge>
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
-            <div className="grid grid-cols-5 gap-2 px-2 py-3 items-center">
-              <div className="col-span-2"><span className="text-sm font-bold">TOTAL</span></div>
-              <span className="text-sm text-right tabular-nums font-semibold">{formatCurrency(current.reduce((s, r) => s + r.revenue_generated, 0))}</span>
-              <div className="flex flex-col items-end">
-                <span className="text-sm font-bold tabular-nums">{formatCurrency(total)}</span>
-              </div>
-              <div />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader><CardTitle>Histórico</CardTitle></CardHeader>
-        <CardContent className="pt-0">
-          <div className="flex flex-col divide-y divide-border">
-            <div className="grid grid-cols-4 gap-2 px-2 py-2 text-[11px] font-semibold text-text-muted uppercase tracking-widest">
-              <span>Mês</span><span>Cliente</span><span className="text-right">Comissão</span><span className="text-right">Status</span>
-            </div>
-            {revenues
-              .filter((r) => r.month !== currentMonth)
-              .sort((a, b) => b.month.localeCompare(a.month))
-              .map((rev) => {
-                const client = demoClients.find((c) => c.id === rev.client_id);
-                const st = statusConfig[rev.status];
-                const Icon = st.icon;
-                return (
-                  <div key={rev.id} className="grid grid-cols-4 gap-2 px-2 py-3 items-center hover:bg-surface-raised rounded-lg">
-                    <span className="text-sm text-text-secondary">{rev.month}</span>
-                    <span className="text-sm text-text-primary">{client?.company_name ?? rev.client_id}</span>
-                    <span className="text-sm text-right tabular-nums font-semibold">{formatCurrency(rev.commission_value)}</span>
-                    <div className="flex justify-end">
-                      <Badge tone={st.tone}><Icon className="h-3 w-3 mr-1" />{st.label}</Badge>
-                    </div>
-                  </div>
-                );
-              })}
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  );
-}
+            <span className="text-3xl font-bold text-text-primary tabular-nums">{formatCurrency(previsto)}
