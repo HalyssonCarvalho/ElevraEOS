@@ -12,11 +12,23 @@ import { clientStatusLabels, taskPriorityLabels } from "@/lib/labels";
 import { formatCurrency, formatDate, formatNumber, formatPercent } from "@/lib/utils/format";
 import { getDashboardRevenueSummary } from "@/lib/data/mock-revenue";
 import { demoRevenues } from "@/lib/data/mock-revenue";
+import { createClient } from "@/lib/supabase/server";
 
-export default function DashboardPage() {
+export default async function DashboardPage() {
+  const supabase = await createClient();
+  let clients = getClientListItems();
+
+  if (supabase) {
+    const { data } = await supabase
+      .from("clients")
+      .select("*")
+      .order("company_name");
+    if (data && data.length > 0) {
+      clients = data.map((c) => ({ ...c, monthLeads: 0, monthRevenue: 0, score: null }));
+    }
+  }
+
   const summary = getDashboardSummary();
-  const clients = getClientListItems();
-  const revSummary = getDashboardRevenueSummary();
   const upcomingTasks = [...demoTasks]
     .filter((t) => t.status !== "concluida" && t.status !== "cancelada")
     .sort((a, b) => a.due_date.localeCompare(b.due_date))
