@@ -29,6 +29,7 @@ export default async function DashboardPage() {
   }
 
   const summary = getDashboardSummary();
+  const revSummary = getDashboardRevenueSummary();
   const upcomingTasks = [...demoTasks]
     .filter((t) => t.status !== "concluida" && t.status !== "cancelada")
     .sort((a, b) => a.due_date.localeCompare(b.due_date))
