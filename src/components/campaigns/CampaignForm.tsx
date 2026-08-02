@@ -70,6 +70,7 @@ export function CampaignForm({ clientId, onAdd }: { clientId: string; onAdd: (c:
       if (error) {
         toast.error("Não foi possível salvar a campanha: " + error.message);
         return;
+      }
     } else {
       await new Promise((r) => setTimeout(r, 300));
     }
