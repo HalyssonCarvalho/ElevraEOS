@@ -78,12 +78,12 @@ export default async function DashboardPage() {
         />
         <StatCard
           label="Receita no mês"
-          value={formatCurrency(summary.monthRevenue, { compact: true })}
+          value={formatCurrency(summary.monthlyRevenue, { compact: true })}
           icon={<DollarSign className="h-4 w-4" />}
         />
         <StatCard
           label="Investimento em marketing"
-          value={formatCurrency(summary.monthInvestment, { compact: true })}
+          value={formatCurrency(summary.monthlyInvestment, { compact: true })}
           icon={<Target className="h-4 w-4" />}
         />
         <StatCard
