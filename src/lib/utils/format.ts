@@ -1,8 +1,8 @@
 // Formatação monetária configurável. Padrão: Real brasileiro.
 // Para trocar a moeda do sistema, altere DEFAULT_CURRENCY e DEFAULT_LOCALE.
 
-export const DEFAULT_LOCALE = "pt-BR";
-export const DEFAULT_CURRENCY = "BRL";
+export const DEFAULT_LOCALE = "en-US";
+export const DEFAULT_CURRENCY = "USD";
 
 export function formatCurrency(
   value: number | null | undefined,
