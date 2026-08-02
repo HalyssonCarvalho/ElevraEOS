@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { toast } from "sonner";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -69,9 +70,12 @@ export function RevenueForm({ onSave, onCancel }: Props) {
         created_at:       new Date().toISOString(),
         updated_at:       new Date().toISOString(),
       });
-    } catch (e) {
+      toast.success("Receita lançada com sucesso!");
+    } catch {
+      toast.error("Erro ao salvar. Tente novamente.");
       setError("Erro ao salvar. Tente novamente.");
     }
+  }
   }
 
   return (
