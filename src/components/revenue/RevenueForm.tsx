@@ -14,7 +14,7 @@ import { clientCommissionPct } from "@/lib/data/mock-revenue";
 const schema = z.object({
   client_id:         z.string().min(1, "Selecione um cliente"),
   month:             z.string().min(1, "Informe o mês"),
-  revenue_generated: z.coerce.number().min(0, "Informe a receita"),
+  revenue_generated: z.number().min(0, "Informe a receita"),
   status:            z.enum(["previsto", "confirmado"]),
   notes:             z.string().optional().or(z.literal("")),
 });
