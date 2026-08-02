@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Menu, ChevronDown } from "lucide-react";
 import { MobileNav } from "@/components/layout/MobileNav";
 import { useDemoRole } from "@/lib/auth/demo-role-context";
+import { GlobalSearch } from "@/components/layout/GlobalSearch";
 import type { UserRole } from "@/lib/types/database";
 
 const roleOptions: { value: UserRole; label: string }[] = [
@@ -27,7 +28,9 @@ export function Topbar() {
           <Menu className="h-5 w-5" />
         </button>
 
-        <div className="flex-1" />
+        <div className="flex-1 flex items-center">
+          <GlobalSearch />
+        </div>
 
         <div className="flex items-center gap-2">
           <span className="hidden sm:inline text-[11px] text-text-muted">Visualizando como</span>
