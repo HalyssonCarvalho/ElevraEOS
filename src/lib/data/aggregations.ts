@@ -69,7 +69,7 @@ export function getDashboardSummary(): DashboardSummary {
     revenue: sumKpiEntries(allEntries.filter((e) => e.period_end === week)).revenue,
   }));
 
-  const today = new Date("2026-07-24");
+  const today = new Date();
   const overdueTasks = demoTasks.filter(
     (t) => t.status !== "concluida" && t.status !== "cancelada" && new Date(t.due_date) < today
   ).length;
@@ -78,15 +78,19 @@ export function getDashboardSummary(): DashboardSummary {
   const activeClients = demoClients.filter((c) => c.status !== "encerrado").length;
 
   const alerts: DashboardSummary["alerts"] = [];
+
+  // Clientes em risco
   demoClients.forEach((c) => {
     if (c.status === "em_risco") {
       alerts.push({
-        id: `alert-${c.id}`,
+        id: `alert-risco-${c.id}`,
         message: `${c.company_name} está com status "em risco" — revisar estratégia.`,
         tone: "danger",
       });
     }
   });
+
+  // Tarefas atrasadas
   if (overdueTasks > 0) {
     alerts.push({
       id: "alert-overdue",
@@ -94,6 +98,44 @@ export function getDashboardSummary(): DashboardSummary {
       tone: "warning",
     });
   }
+
+  // Clientes sem KPI recente (mais de 7 dias sem lançamento)
+  demoClients.forEach((c) => {
+    const entries = getKpiEntriesForClient(c.id);
+    if (entries.length === 0) {
+      alerts.push({
+        id: `alert-nokpi-${c.id}`,
+        message: `${c.company_name} não tem KPIs registrados ainda.`,
+        tone: "warning",
+      });
+      return;
+    }
+    const latest = entries.reduce((max, e) => e.updated_at > max ? e.updated_at : max, entries[0].updated_at);
+    const daysSince = (today.getTime() - new Date(latest).getTime()) / (1000 * 60 * 60 * 24);
+    if (daysSince > 7) {
+      alerts.push({
+        id: `alert-kpi-${c.id}`,
+        message: `${c.company_name} sem KPI atualizado há ${Math.floor(daysSince)} dias.`,
+        tone: "warning",
+      });
+    }
+  });
+
+  // Clientes com meta de leads abaixo de 50%
+  demoClients.forEach((c) => {
+    const entries = getKpiEntriesForClient(c.id);
+    const totals = sumKpiEntries(entries);
+    if (c.monthly_leads_goal > 0) {
+      const progress = (totals.leads / c.monthly_leads_goal) * 100;
+      if (progress < 50) {
+        alerts.push({
+          id: `alert-leads-${c.id}`,
+          message: `${c.company_name} atingiu apenas ${progress.toFixed(0)}% da meta de leads.`,
+          tone: "warning",
+        });
+      }
+    }
+  });
 
   return {
     activeClients,
