@@ -1,11 +1,14 @@
 import { notFound } from "next/navigation";
-import { getClientById, demoCampaigns } from "@/lib/data/mock-data";
+import { getClientByIdFromDB } from "@/lib/data/queries";
+import { getClientById } from "@/lib/data/mock-data";
 import { CampaignsPageClient } from "@/components/campaigns/CampaignsPageClient";
 import { createClient } from "@/lib/supabase/server";
 
 export default async function ClientMarketingPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const client = getClientById(id);
+
+  let client = await getClientByIdFromDB(id);
+  if (!client) client = getClientById(id) ?? null;
   if (!client) notFound();
 
   const supabase = await createClient();
@@ -22,6 +25,5 @@ export default async function ClientMarketingPage({ params }: { params: Promise<
     }
   }
 
-  const campaigns = demoCampaigns.filter((c) => c.client_id === id);
-  return <CampaignsPageClient clientId={id} initialCampaigns={campaigns} />;
+  return <CampaignsPageClient clientId={id} initialCampaigns={[]} />;
 }

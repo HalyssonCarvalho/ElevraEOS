@@ -1,12 +1,14 @@
 import { notFound } from "next/navigation";
+import { getClientByIdFromDB } from "@/lib/data/queries";
 import { getClientById } from "@/lib/data/mock-data";
 import { TasksPageClient } from "@/components/tasks/TasksPageClient";
 import { createClient } from "@/lib/supabase/server";
-import { demoTasks } from "@/lib/data/mock-data";
 
 export default async function ClientTasksPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const client = getClientById(id);
+
+  let client = await getClientByIdFromDB(id);
+  if (!client) client = getClientById(id) ?? null;
   if (!client) notFound();
 
   const supabase = await createClient();
@@ -23,6 +25,5 @@ export default async function ClientTasksPage({ params }: { params: Promise<{ id
     }
   }
 
-  const tasks = demoTasks.filter((t) => t.client_id === id);
-  return <TasksPageClient clientId={id} initialTasks={tasks} />;
+  return <TasksPageClient clientId={id} initialTasks={[]} />;
 }

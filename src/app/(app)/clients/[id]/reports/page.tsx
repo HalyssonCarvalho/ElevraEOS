@@ -1,11 +1,14 @@
 import { notFound } from "next/navigation";
-import { getClientById, demoWeeklyReports } from "@/lib/data/mock-data";
+import { getClientByIdFromDB } from "@/lib/data/queries";
+import { getClientById } from "@/lib/data/mock-data";
 import { ReportsPageClient } from "@/components/reports/ReportsPageClient";
 import { createClient } from "@/lib/supabase/server";
 
 export default async function ClientReportsPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const client = getClientById(id);
+
+  let client = await getClientByIdFromDB(id);
+  if (!client) client = getClientById(id) ?? null;
   if (!client) notFound();
 
   const supabase = await createClient();
@@ -22,6 +25,5 @@ export default async function ClientReportsPage({ params }: { params: Promise<{ 
     }
   }
 
-  const reports = demoWeeklyReports.filter((r) => r.client_id === id);
-  return <ReportsPageClient clientId={id} initialReports={reports} />;
+  return <ReportsPageClient clientId={id} initialReports={[]} />;
 }

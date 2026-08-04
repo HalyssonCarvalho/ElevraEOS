@@ -1,11 +1,14 @@
 import { notFound } from "next/navigation";
-import { getClientById, demoElevraScores } from "@/lib/data/mock-data";
+import { getClientByIdFromDB } from "@/lib/data/queries";
+import { getClientById } from "@/lib/data/mock-data";
 import { ScorePageClient } from "@/components/score/ScorePageClient";
 import { createClient } from "@/lib/supabase/server";
 
 export default async function ClientScorePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const client = getClientById(id);
+
+  let client = await getClientByIdFromDB(id);
+  if (!client) client = getClientById(id) ?? null;
   if (!client) notFound();
 
   const supabase = await createClient();
@@ -22,6 +25,5 @@ export default async function ClientScorePage({ params }: { params: Promise<{ id
     }
   }
 
-  const scores = demoElevraScores.filter((s) => s.client_id === id);
-  return <ScorePageClient clientId={id} initialScores={scores} />;
+  return <ScorePageClient clientId={id} initialScores={[]} />;
 }

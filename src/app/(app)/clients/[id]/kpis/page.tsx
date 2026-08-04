@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { getClientByIdFromDB } from "@/lib/data/queries";
 import { getClientById } from "@/lib/data/mock-data";
 import { getKpiEntriesForClient } from "@/lib/data/aggregations";
 import { KpiPageClient } from "@/components/kpis/KpiPageClient";
@@ -6,7 +7,9 @@ import { createClient } from "@/lib/supabase/server";
 
 export default async function ClientKpisPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const client = getClientById(id);
+
+  let client = await getClientByIdFromDB(id);
+  if (!client) client = getClientById(id) ?? null;
   if (!client) notFound();
 
   const supabase = await createClient();

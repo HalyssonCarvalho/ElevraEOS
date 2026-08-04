@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { Tabs } from "@/components/ui/Tabs";
 import { Badge } from "@/components/ui/Badge";
+import { getClientByIdFromDB } from "@/lib/data/queries";
 import { getClientById } from "@/lib/data/mock-data";
 import { clientStatusLabels } from "@/lib/labels";
 import { initials } from "@/lib/utils/format";
@@ -15,7 +16,10 @@ export default async function ClientLayout({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const client = getClientById(id);
+
+  // Tenta buscar do Supabase primeiro, fallback para mock
+  let client = await getClientByIdFromDB(id);
+  if (!client) client = getClientById(id) ?? null;
   if (!client) notFound();
 
   const base = `/clients/${id}`;
@@ -52,15 +56,15 @@ export default async function ClientLayout({
 
       <Tabs
         items={[
-          { label: "Visão geral", href: base },
-          { label: "KPIs", href: `${base}/kpis` },
-          { label: "Marketing", href: `${base}/marketing` },
-          { label: "Calendário", href: `${base}/calendar` },
-          { label: "Tarefas", href: `${base}/tasks` },
-          { label: "Relatórios", href: `${base}/reports` },
-          { label: "Pipeline", href: `${base}/pipeline` },
+          { label: "Visão geral",    href: base },
+          { label: "KPIs",           href: `${base}/kpis` },
+          { label: "Marketing",      href: `${base}/marketing` },
+          { label: "Calendário",     href: `${base}/calendar` },
+          { label: "Tarefas",        href: `${base}/tasks` },
+          { label: "Relatórios",     href: `${base}/reports` },
+          { label: "Pipeline",       href: `${base}/pipeline` },
           { label: "🔑 Credenciais", href: `${base}/credentials` },
-          { label: "Configurações", href: `${base}/settings` },
+          { label: "Configurações",  href: `${base}/settings` },
         ]}
       />
 
