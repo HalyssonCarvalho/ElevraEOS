@@ -31,7 +31,7 @@ export default async function ClientOverviewPage({ params }: { params: Promise<{
     if (data && data.length > 0) entries = data;
   }
 
-  const overview = getClientOverview(client, entries);
+  const overview = getClientOverview(client);
   const extras = demoClientExtras[id];
   const score = demoElevraScores.find((s) => s.client_id === id);
 
