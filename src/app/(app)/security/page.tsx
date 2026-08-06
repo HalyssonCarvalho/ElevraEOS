@@ -40,6 +40,11 @@ export default async function SecurityPage() {
       <PageHeader
         title="Segurança & Auditoria"
         description="Registro completo de acessos e ações no sistema."
+        actions={
+          <a href="/security/mfa" className="inline-flex items-center gap-2 px-4 h-10 rounded-lg bg-accent text-white text-sm font-medium hover:bg-accent-hover transition-colors">
+            🔐 Configurar 2FA
+          </a>
+        }
       />
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
