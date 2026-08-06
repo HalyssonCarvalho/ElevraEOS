@@ -20,6 +20,19 @@ import { useDemoRole } from "@/lib/auth/demo-role-context";
 import { getNavItems } from "@/components/layout/nav-items";
 import { initials } from "@/lib/utils/format";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
+import {
+  LayoutDashboard,
+  Building2,
+  ListChecks,
+  CalendarDays,
+  FileText,
+  TrendingUp,
+  Megaphone,
+  DollarSign,
+  BarChart2,
+  LogOut,
+  Sparkles,
+} from "lucide-react";
 
 const iconMap = {
   LayoutDashboard,
@@ -30,6 +43,17 @@ const iconMap = {
   TrendingUp,
   Megaphone,
   DollarSign,
+  const iconMap = {
+  LayoutDashboard,
+  Building2,
+  ListChecks,
+  CalendarDays,
+  FileText,
+  TrendingUp,
+  Megaphone,
+  DollarSign,
+  BarChart2,
+
 };
 
 const roleLabel: Record<string, string> = {

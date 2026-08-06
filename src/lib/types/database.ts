@@ -265,3 +265,23 @@ export interface ClientRevenue extends BaseRecord {
 export interface ClientCommissionSettings {
   commission_pct: number;   // % padrão acordado com este cliente
 }
+// ---------------------------------------------------------------------------
+// DESPESAS OPERACIONAIS
+// ---------------------------------------------------------------------------
+
+export type ExpenseCategory =
+  | "equipe"
+  | "ferramentas"
+  | "ads"
+  | "infraestrutura"
+  | "outros";
+
+export interface Expense extends BaseRecord {
+  organization_id: string;
+  client_id: string | null;
+  description: string;
+  category: ExpenseCategory;
+  amount: number;
+  month: string;
+  created_by: string | null;
+}
