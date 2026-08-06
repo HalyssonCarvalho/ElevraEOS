@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect } from "react";
+import { logAudit } from "@/lib/security/audit";
 import { useState } from "react";
 import { Plus, Eye, EyeOff, Copy, Check, Pencil, Trash2, KeyRound, ExternalLink, ShieldCheck } from "lucide-react";
 import { PageHeader } from "@/components/ui/PageHeader";
@@ -81,6 +83,10 @@ function CredentialRow({ credential, onEdit, onDelete }: { credential: ClientCre
 
 export function CredentialsPageClient({ clientId, initialCredentials }: { clientId: string; initialCredentials: ClientCredential[]; }) {
   const [credentials, setCredentials] = useState<ClientCredential[]>(initialCredentials);
+
+  useEffect(() => {
+    logAudit({ action: "view_credentials", resource: "client_credentials", resource_id: clientId });
+  }, [clientId]);
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<ClientCredential | null>(null);
 

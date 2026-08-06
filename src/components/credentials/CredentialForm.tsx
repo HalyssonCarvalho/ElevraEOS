@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Loader2, Eye, EyeOff, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
+import { logAudit } from "@/lib/security/audit";
 import { Input, Select, Textarea } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
@@ -104,9 +105,10 @@ export function CredentialForm({ clientId, initial, onSave, onCancel }: Props) {
             .single();
           if (dbErr) throw new Error(dbErr.message);
           if (data) {
-            toast.success("Credencial salva com segurança!");
-            onSave({ ...data, password_plain: undefined } as ClientCredential);
-            return;
+            await logAudit({ action: "create_credential", resource: "client_credentials", resource_id: data.id, details: { label: values.label, client_id: clientId } });
+        toast.success("Credencial salva com segurança!");
+        onSave({ ...data, password_plain: undefined } as ClientCredential);
+        return;
           }
         }
 

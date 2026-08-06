@@ -13,6 +13,7 @@ import {
   Megaphone,
   DollarSign,
   BarChart2,
+  ShieldCheck,
   LogOut,
   Sparkles,
 } from "lucide-react";
@@ -32,6 +33,7 @@ const iconMap = {
   Megaphone,
   DollarSign,
   BarChart2,
+  ShieldCheck,
 };
 
 const roleLabel: Record<string, string> = {

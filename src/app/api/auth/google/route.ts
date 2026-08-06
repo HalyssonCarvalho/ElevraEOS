@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import { rateLimit } from "@/lib/security/rate-limit";
 
 const GOOGLE_CLIENT_ID     = process.env.GOOGLE_CLIENT_ID!;
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET!;
@@ -12,6 +13,12 @@ export async function GET(request: NextRequest) {
   const code  = searchParams.get("code");
   const state = searchParams.get("state");
 
+  // Rate limiting — máximo 5 tentativas por IP por minuto
+  const ip = request.headers.get("x-forwarded-for") ?? "unknown";
+  const limit = rateLimit(`google-oauth:${ip}`, { maxRequests: 5, windowMs: 60000 });
+  if (!limit.success) {
+    return NextResponse.json({ error: "Muitas tentativas. Aguarde 1 minuto." }, { status: 429 });
+  }
   if (!code || !state) {
     return NextResponse.json({ error: "Parâmetros inválidos" }, { status: 400 });
   }

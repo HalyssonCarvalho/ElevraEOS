@@ -9,6 +9,7 @@ import { Input, Select, Textarea } from "@/components/ui/Input";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { toast } from "sonner";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
+import { logAudit } from "@/lib/security/audit";
 import type { Expense, ExpenseCategory } from "@/lib/types/database";
 
 function formatCurrency(value: number) {
@@ -49,6 +50,7 @@ export function FinancialDashboard({ revenues }: { revenues: { commission_value:
   const currentMonth = new Date().toISOString().slice(0, 7);
 
   useEffect(() => {
+    logAudit({ action: "view_financial", resource: "financial_dashboard" });
     async function fetch() {
       const supabase = isSupabaseConfigured() ? createClient() : null;
       if (supabase) {

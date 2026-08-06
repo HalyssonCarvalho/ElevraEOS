@@ -26,5 +26,6 @@ export function getNavItems(role: UserRole, clientId: string | null): NavItem[] 
     { label: "Relatórios", href: "/reports", icon: "FileText" },
     { label: "Receitas", href: "/revenue", icon: "DollarSign" },
     { label: "Financeiro", href: "/financial", icon: "BarChart2" },
+    { label: "Segurança", href: "/security", icon: "ShieldCheck" },
   ];
 }
