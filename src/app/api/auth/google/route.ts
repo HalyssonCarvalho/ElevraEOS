@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
+import { createServerClient } from "@supabase/ssr";
+import { cookies } from "next/headers";
 
 const GOOGLE_CLIENT_ID     = process.env.GOOGLE_CLIENT_ID!;
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET!;
@@ -15,7 +17,6 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    // Troca code por tokens
     const tokenRes = await fetch("https://oauth2.googleapis.com/token", {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -35,7 +36,6 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Busca contas GMB
     const accountsRes = await fetch(
       "https://mybusinessaccountmanagement.googleapis.com/v1/accounts",
       { headers: { Authorization: `Bearer ${tokens.access_token}` } }
@@ -50,24 +50,21 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Criptografa tokens antes de salvar
-    const { createClient } = await import("@supabase/ssr");
-    const { cookies } = await import("next/headers");
     const cookieStore = await cookies();
-
-    const supabase = createClient(
+    const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
       {
         cookies: {
           getAll: () => cookieStore.getAll(),
-          setAll: (cs) => cs.forEach(({ name, value, options }) => cookieStore.set(name, value, options)),
+          setAll: (cs) => cs.forEach(({ name, value, options }) =>
+            cookieStore.set(name, value, options)
+          ),
         },
       }
     );
 
-    // Criptografa tokens via função Supabase
-    const { data: encryptedAccess }  = await supabase.rpc("encrypt_token", { plain_text: tokens.access_token,  secret: ENCRYPTION_KEY });
+    const { data: encryptedAccess }  = await supabase.rpc("encrypt_token", { plain_text: tokens.access_token, secret: ENCRYPTION_KEY });
     const { data: encryptedRefresh } = await supabase.rpc("encrypt_token", { plain_text: tokens.refresh_token ?? "", secret: ENCRYPTION_KEY });
 
     await supabase.from("client_integrations").upsert({
