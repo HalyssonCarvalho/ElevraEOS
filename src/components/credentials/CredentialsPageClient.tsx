@@ -25,7 +25,7 @@ const categoryLabels: Record<CredentialCategory, { label: string; tone: "neutral
 function CredentialRow({ credential, onEdit, onDelete }: { credential: ClientCredential; onEdit: (c: ClientCredential) => void; onDelete: (id: string) => void; }) {
   const [visible, setVisible] = useState(false);
   const [copied, setCopied] = useState<"user" | "pass" | null>(null);
-  const password = credential.password_plain ?? "••••••••••";
+  const password = "••••••••••"; // senha protegida no banco
 
   function copy(text: string, field: "user" | "pass") {
     navigator.clipboard.writeText(text).then(() => { setCopied(field); setTimeout(() => setCopied(null), 1800); });
@@ -55,11 +55,6 @@ function CredentialRow({ credential, onEdit, onDelete }: { credential: ClientCre
           <button onClick={() => setVisible((v) => !v)} className="ml-1 text-text-muted hover:text-accent shrink-0">
             {visible ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
           </button>
-          {visible && (
-            <button onClick={() => copy(password, "pass")} className="text-text-muted hover:text-accent shrink-0">
-              {copied === "pass" ? <Check className="h-3 w-3 text-success" /> : <Copy className="h-3 w-3" />}
-            </button>
-          )}
         </div>
         {(credential.url || credential.notes) && (
           <div className="flex flex-wrap items-center gap-3 mt-0.5">

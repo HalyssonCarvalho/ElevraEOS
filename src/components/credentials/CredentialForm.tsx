@@ -2,21 +2,21 @@
 
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Loader2, Eye, EyeOff, RefreshCw } from "lucide-react";
+import { toast } from "sonner";
 import { Input, Select, Textarea } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
 import type { ClientCredential, CredentialCategory } from "@/lib/types/database";
 
 const schema = z.object({
-  label:         z.string().min(1, "Informe um nome"),
-  category:      z.enum(["social_media","ads","website","crm","email_marketing","analytics","hosting","domain","other"]),
-  username:      z.string().min(1, "Informe o usuário"),
+  label:          z.string().min(1, "Informe um nome"),
+  category:       z.enum(["social_media","ads","website","crm","email_marketing","analytics","hosting","domain","other"]),
+  username:       z.string().min(1, "Informe o usuário"),
   password_plain: z.string().min(1, "Informe a senha"),
-  url:   z.string().optional().or(z.literal("")),
-  notes: z.string().optional().or(z.literal("")),
+  url:            z.string().optional().or(z.literal("")),
+  notes:          z.string().optional().or(z.literal("")),
 });
 
 type FormValues = z.infer<typeof schema>;
@@ -52,12 +52,11 @@ export function CredentialForm({ clientId, initial, onSave, onCancel }: Props) {
   const [error, setError] = useState<string | null>(null);
 
   const { register, handleSubmit, setValue, formState: { errors, isSubmitting } } = useForm<FormValues>({
-    resolver: zodResolver(schema),
     defaultValues: {
       label:          initial?.label ?? "",
       category:       initial?.category ?? "other",
       username:       initial?.username ?? "",
-      password_plain: initial?.password_plain ?? "",
+      password_plain: "",
       url:            initial?.url ?? "",
       notes:          initial?.notes ?? "",
     },
@@ -66,26 +65,68 @@ export function CredentialForm({ clientId, initial, onSave, onCancel }: Props) {
   async function onSubmit(values: FormValues) {
     setError(null);
     try {
-      await new Promise((r) => setTimeout(r, 300));
-      onSave({
-        ...(initial ?? {}),
-        id:              initial?.id ?? `cred-${Date.now()}`,
-        client_id:       clientId,
-        organization_id: initial?.organization_id ?? "",
-        label:           values.label,
-        category:        values.category,
-        username:        values.username,
-        password_plain:  values.password_plain,
-        password_enc:    "",
-        url:             values.url || null,
-        notes:           values.notes || null,
-        created_by:      initial?.created_by ?? null,
-        updated_by:      null,
-        created_at:      initial?.created_at ?? new Date().toISOString(),
-        updated_at:      new Date().toISOString(),
-      } as ClientCredential);
+      const supabase = isSupabaseConfigured() ? createClient() : null;
+
+      if (supabase) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("organization_id")
+          .single();
+
+        if (!profile) throw new Error("Perfil não encontrado.");
+
+        // Criptografa a senha via função do Supabase
+        const { data: encrypted } = await supabase
+          .rpc("encrypt_password", { plain_text: values.password_plain });
+
+        const payload = {
+          client_id:      clientId,
+          organization_id: profile.organization_id,
+          label:          values.label,
+          category:       values.category,
+          username:       values.username,
+          password_enc:   encrypted ?? "",
+          url:            values.url || null,
+          notes:          values.notes || null,
+        };
+
+        if (initial) {
+          const { error: dbErr } = await supabase
+            .from("client_credentials")
+            .update(payload)
+            .eq("id", initial.id);
+          if (dbErr) throw new Error(dbErr.message);
+        } else {
+          const { data, error: dbErr } = await supabase
+            .from("client_credentials")
+            .insert(payload)
+            .select()
+            .single();
+          if (dbErr) throw new Error(dbErr.message);
+          if (data) {
+            toast.success("Credencial salva com segurança!");
+            onSave({ ...data, password_plain: undefined } as ClientCredential);
+            return;
+          }
+        }
+
+        toast.success("Credencial salva com segurança!");
+        onSave({
+          ...(initial ?? {}),
+          ...payload,
+          id:         initial?.id ?? `cred-${Date.now()}`,
+          created_at: initial?.created_at ?? new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          created_by: initial?.created_by ?? null,
+          updated_by: null,
+        } as ClientCredential);
+      } else {
+        toast.error("Supabase não configurado.");
+      }
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Erro ao salvar");
+      const msg = e instanceof Error ? e.message : "Erro ao salvar";
+      setError(msg);
+      toast.error(msg);
     }
   }
 
@@ -120,7 +161,12 @@ export function CredentialForm({ clientId, initial, onSave, onCancel }: Props) {
                 {showPass ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
             </div>
-            <button type="button" onClick={() => { setValue("password_plain", generatePassword()); setShowPass(true); }} className="h-10 w-10 shrink-0 flex items-center justify-center rounded-lg border border-border-strong bg-surface hover:bg-surface-hover text-text-muted hover:text-accent" title="Gerar senha forte">
+            <button
+              type="button"
+              onClick={() => { setValue("password_plain", generatePassword()); setShowPass(true); }}
+              className="h-10 w-10 shrink-0 flex items-center justify-center rounded-lg border border-border-strong bg-surface hover:bg-surface-hover text-text-muted hover:text-accent"
+              title="Gerar senha forte"
+            >
               <RefreshCw className="h-3.5 w-3.5" />
             </button>
           </div>
