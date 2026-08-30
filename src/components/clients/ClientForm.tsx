@@ -11,7 +11,6 @@ import { Card, CardContent } from "@/components/ui/Card";
 import { Input, Select, Textarea } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
-import { demoProfiles } from "@/lib/data/mock-data";
 
 const clientSchema = z.object({
   company_name: z.string().min(2, "Informe o nome da empresa"),
@@ -32,7 +31,11 @@ const clientSchema = z.object({
 
 type ClientFormValues = z.infer<typeof clientSchema>;
 
-export function ClientForm() {
+interface ClientFormProps {
+  profiles: { id: string; full_name: string }[];
+}
+
+export function ClientForm({ profiles }: ClientFormProps) {
   const router = useRouter();
   const [submitted, setSubmitted] = useState(false);
   const {
@@ -123,9 +126,7 @@ export function ClientForm() {
               required
               options={[
                 { label: "Selecione...", value: "" },
-                ...demoProfiles
-                  .filter((p) => p.role === "consultor" || p.role === "admin")
-                  .map((p) => ({ label: p.full_name, value: p.id })),
+                ...profiles.map((p) => ({ label: p.full_name, value: p.id })),
               ]}
               {...register("responsible_profile_id")}
               error={errors.responsible_profile_id?.message}
