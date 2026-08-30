@@ -57,8 +57,14 @@ export function ClientForm() {
         ...values,
         website: values.website || null,
       });
+
+      // CORREÇÃO: antes, o formulário mostrava "sucesso" e redirecionava
+      // mesmo quando o insert falhava (ex: organization_id ausente antes da
+      // migração 003, ou qualquer outro erro do banco). Agora um erro real
+      // interrompe o fluxo aqui - nada de sucesso falso.
       if (error) {
         toast.error("Não foi possível salvar o cliente: " + error.message);
+        return;
       }
     } else {
       // Modo de demonstração: sem Supabase configurado, apenas simula o
