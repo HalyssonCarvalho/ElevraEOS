@@ -8,6 +8,11 @@ import { getClientById } from "@/lib/data/mock-data";
 import { clientStatusLabels } from "@/lib/labels";
 import { initials } from "@/lib/utils/format";
 
+// Mesma correção da lista de clientes: evita que o Next.js sirva uma
+// versão em cache desatualizada dos dados deste cliente.
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function ClientLayout({
   children,
   params,

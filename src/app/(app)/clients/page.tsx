@@ -2,6 +2,14 @@ import { ClientsView } from "@/components/clients/ClientsView";
 import { getClientListItems } from "@/lib/data/aggregations";
 import { createClient } from "@/lib/supabase/server";
 
+// Força esta página a sempre buscar dados frescos do Supabase a cada
+// requisição, em vez de usar o cache padrão do Next.js (que, sem isso,
+// pode continuar servindo o resultado da primeira vez que a página rodou
+// - por exemplo, "0 clientes" - mesmo depois de novos clientes serem
+// cadastrados no banco).
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function ClientsPage() {
   const supabase = await createClient();
 
