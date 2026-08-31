@@ -81,7 +81,7 @@ export function ClientsView({ clients }: { clients: ClientListItem[] }) {
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 flex-1 text-xs">
                       <div>
                         <p className="text-text-muted mb-0.5">Responsável</p>
-                        <p className="text-text-secondary">{c.responsible_profile_id ? "Rafael Nogueira" : "—"}</p>
+                        <p className="text-text-secondary">{c.responsible_name ?? "—"}</p>
                       </div>
                       <div>
                         <p className="text-text-muted mb-0.5">Receita do mês</p>

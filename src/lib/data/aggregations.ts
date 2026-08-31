@@ -80,7 +80,6 @@ export function getDashboardSummary(): DashboardSummary {
 
   const alerts: DashboardSummary["alerts"] = [];
 
-  // Clientes em risco
   demoClients.forEach((c) => {
     if (c.status === "em_risco") {
       alerts.push({
@@ -91,7 +90,6 @@ export function getDashboardSummary(): DashboardSummary {
     }
   });
 
-  // Tarefas atrasadas
   if (overdueTasks > 0) {
     alerts.push({
       id: "alert-overdue",
@@ -100,7 +98,6 @@ export function getDashboardSummary(): DashboardSummary {
     });
   }
 
-  // Clientes sem KPI recente (mais de 7 dias sem lançamento)
   demoClients.forEach((c) => {
     const entries = getKpiEntriesForClient(c.id);
     if (entries.length === 0) {
@@ -122,7 +119,6 @@ export function getDashboardSummary(): DashboardSummary {
     }
   });
 
-  // Clientes com meta de leads abaixo de 50%
   demoClients.forEach((c) => {
     const entries = getKpiEntriesForClient(c.id);
     const totals = sumKpiEntries(entries);
