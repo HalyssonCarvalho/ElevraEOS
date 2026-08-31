@@ -12,6 +12,22 @@ export interface Lead {
   notes: string | null;
   created_at: string;
   updated_at: string;
+
+  vehicle_type?: string | null;
+  budget_range?: string | null;
+  purchase_method?: string | null;
+  down_payment_range?: string | null;
+  employment_status?: string | null;
+  has_trade_in?: string | null;
+  purchase_timeline?: string | null;
+  appointment_date?: string | null;
+  appointment_time?: string | null;
+  human_handoff_requested?: boolean;
+  lead_score?: number;
+  lead_temperature?: "HOT" | "WARM" | "NURTURE";
+  preferred_contact?: string | null;
+  ghl_event?: string | null;
+  source_sent_at?: string | null;
 }
 
 export const stageLabels: Record<LeadStage, string> = {
