@@ -61,9 +61,15 @@ export function ClientSettingsForm({ client }: { client: Client }) {
   async function onSubmit(values: ClientFormValues) {
     const supabase = isSupabaseConfigured() ? createClient() : null;
     if (supabase) {
+      // CORREÇÃO: commission_pct não é uma coluna da tabela `clients` (é
+      // parte de uma feature de comissão ainda não conectada a uma tabela
+      // própria) — enviá-la aqui quebrava o update com o erro "Could not
+      // find the 'commission_pct' column of 'clients' in the schema cache".
+      // Removida do payload até essa feature ser implementada de verdade.
+      const { commission_pct: _commissionPct, ...clientFields } = values;
       const { error } = await supabase
         .from("clients")
-        .update({ ...values, website: values.website || null })
+        .update({ ...clientFields, website: values.website || null })
         .eq("id", client.id);
       if (error) {
         toast.error("Não foi possível salvar as alterações: " + error.message);
