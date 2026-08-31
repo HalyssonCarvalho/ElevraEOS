@@ -10,7 +10,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Input, Select, Textarea } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
-import { demoProfiles } from "@/lib/data/mock-data";
 import type { Client } from "@/lib/types/database";
 
 const clientSchema = z.object({
@@ -32,7 +31,13 @@ const clientSchema = z.object({
 
 type ClientFormValues = z.infer<typeof clientSchema>;
 
-export function ClientSettingsForm({ client }: { client: Client }) {
+export function ClientSettingsForm({
+  client,
+  profiles,
+}: {
+  client: Client;
+  profiles: { id: string; full_name: string }[];
+}) {
   const [saved, setSaved] = useState(false);
   const {
     register,
@@ -115,7 +120,7 @@ export function ClientSettingsForm({ client }: { client: Client }) {
             </div>
             <Select
               label="Responsável da Elevra"
-              options={demoProfiles.map((p) => ({ label: p.full_name, value: p.id }))}
+              options={profiles.map((p) => ({ label: p.full_name, value: p.id }))}
               {...register("responsible_profile_id")}
             />
             <Textarea label="Objetivo principal" required {...register("main_goal")} error={errors.main_goal?.message} />
