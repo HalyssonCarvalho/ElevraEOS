@@ -3,6 +3,7 @@ import {
   demoClients,
   demoElevraScores,
   demoKpiEntries,
+  demoProfiles,
   demoTasks,
 } from "@/lib/data/mock-data";
 import { sumKpiEntries, calculateROI } from "@/lib/utils/calculations";
@@ -198,6 +199,7 @@ export interface ClientListItem extends Client {
   monthLeads: number;
   monthRevenue: number;
   score: number | null;
+  responsible_name?: string | null;
 }
 
 export function getClientListItems(): ClientListItem[] {
@@ -205,11 +207,13 @@ export function getClientListItems(): ClientListItem[] {
     const entries = getKpiEntriesForClient(client.id);
     const totals = sumKpiEntries(entries);
     const score = demoElevraScores.find((s) => s.client_id === client.id);
+    const responsible = demoProfiles.find((p) => p.id === client.responsible_profile_id);
     return {
       ...client,
       monthLeads: totals.leads,
       monthRevenue: totals.revenue,
       score: score ? score.overall_score : null,
+      responsible_name: responsible?.full_name ?? null,
     };
   });
 }
